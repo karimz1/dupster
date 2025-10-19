@@ -37,7 +37,12 @@ jobs:
       - name: Generate resource blocks
         id: poet
         run: |
-          poet --resources $(cat requirements.txt | grep -v '^#') > resources.txt
+          pip install -r requirements.txt
+          echo "" > resources.txt
+          for pkg in $(cat requirements.txt | grep -v '^#'); do
+            poet --resources $pkg >> resources.txt
+            echo "" >> resources.txt
+          done
           echo "resources<<EOF" >> $GITHUB_OUTPUT
           cat resources.txt >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
