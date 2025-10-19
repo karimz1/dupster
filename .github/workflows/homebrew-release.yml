@@ -1,0 +1,100 @@
+name: Homebrew Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout dupster repo
+        uses: actions/checkout@v4
+
+      - name: Get release tag
+        id: vars
+        run: echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Compute source tarball SHA256
+        id: sha
+        run: |
+          curl -L -o source.tar.gz https://github.com/${{ github.repository }}/archive/refs/tags/${{ steps.vars.outputs.tag }}.tar.gz
+          echo "sha256=$(sha256sum source.tar.gz | awk '{print $1}')" >> $GITHUB_OUTPUT
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.9"
+
+      - name: Install poet (resource generator)
+        run: |
+          python -m pip install --upgrade pip
+          pip install homebrew-pypi-poet
+
+      - name: Generate resource blocks from requirements.txt
+        id: poet
+        run: |
+          # Generates Ruby 'resource' stanzas for all deps in requirements.txt (with transitive deps)
+          poet -r requirements.txt > resources.txt
+          echo "resources<<EOF" >> $GITHUB_OUTPUT
+          cat resources.txt >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Clone Homebrew tap
+        uses: actions/checkout@v4
+        with:
+          repository: YOUR_GH_USERNAME/homebrew-dupster
+          path: tap
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN || github.token }}
+
+      - name: Write/Update Homebrew formula
+        run: |
+          mkdir -p tap/Formula
+          cat > tap/Formula/dupster.rb <<'RUBY'
+          class Dupster < Formula
+            include Language::Python::Virtualenv
+
+            desc "Modern CLI to find and clean up duplicate files"
+            homepage "https://github.com/${{ github.repository }}"
+            url "https://github.com/${{ github.repository }}/archive/refs/tags/${{ steps.vars.outputs.tag }}.tar.gz"
+            sha256 "${{ steps.sha.outputs.sha256 }}"
+            license "Apache-2.0"
+
+            depends_on "python@3.9"
+
+          ${{ steps.poet.outputs.resources }}
+
+            def install
+              # Create venv and install Python deps (resources)
+              venv = virtualenv_create(libexec, "python3.11")
+              venv.pip_install resources
+
+              # Install the dupster.py script to libexec
+              libexec.install "dupster.py"
+
+              # Create a wrapper so users can just run `dupster`
+              (bin/"dupster").write <<~EOS
+                #!/bin/bash
+                exec "#{libexec}/bin/python" "#{libexec}/dupster.py" "$@"
+              EOS
+            end
+
+            test do
+              assert_match "Usage", shell_output("#{bin}/dupster --help")
+            end
+          end
+          RUBY
+
+      - name: Commit and push to tap
+        run: |
+          cd tap
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add Formula/dupster.rb
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "Update Dupster to ${{ steps.vars.outputs.tag }}"
+            git push
+          fi
