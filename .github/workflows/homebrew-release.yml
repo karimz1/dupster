@@ -50,12 +50,12 @@ jobs:
           cat resources.txt >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Clone Homebrew tap
+      - name: Clone Homebrew tap via SSH
         uses: actions/checkout@v4
         with:
           repository: karimz1/homebrew-dupster
           path: tap
-          token: ${{ github.token }}
+          ssh-key: ${{ secrets.TAP_DEPLOY_KEY }}
 
       - name: Write Dupster Formula
         run: |
