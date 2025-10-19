@@ -40,7 +40,6 @@ jobs:
       - name: Generate resource blocks
         id: poet
         run: |
-          pip install -r requirements.txt
           : > resources.txt
           for pkg in $(cat requirements.txt | grep -v '^#'); do
             poet --resources $pkg >> resources.txt
@@ -50,12 +49,12 @@ jobs:
           cat resources.txt >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Clone Homebrew tap via SSH
+      - name: Clone Homebrew tap via token
         uses: actions/checkout@v4
         with:
           repository: karimz1/homebrew-dupster
           path: tap
-          ssh-key: ${{ secrets.TAP_DEPLOY_KEY }}
+          token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
 
       - name: Write Dupster Formula
         run: |
@@ -100,5 +99,5 @@ jobs:
             echo "No changes to commit."
           else
             git commit -m "Update Dupster to ${{ steps.vars.outputs.tag }}"
-            git push
+            git push https://x-access-token:${{ secrets.HOMEBREW_TAP_TOKEN }}@github.com/karimz1/homebrew-dupster.git main
           fi
