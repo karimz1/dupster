@@ -50,7 +50,7 @@ jobs:
       - name: Clone Homebrew tap
         uses: actions/checkout@v4
         with:
-          repository: YOUR_GITHUB_USERNAME/homebrew-dupster
+          repository: karimz1/homebrew-dupster
           path: tap
           token: ${{ secrets.HOMEBREW_TAP_TOKEN || github.token }}
 
