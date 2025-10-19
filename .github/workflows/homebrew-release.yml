@@ -59,8 +59,8 @@ jobs:
       - name: Write Dupster Formula
         run: |
           mkdir -p tap/Formula
-          cat > tap/Formula/dupster.rb <<'RUBY'
-          class Dupster < Formula
+          cat > tap/Formula/dupster-cli.rb <<'RUBY'
+          class DupsterCli < Formula
             include Language::Python::Virtualenv
 
             desc "Modern CLI to find and clean up duplicate files"
