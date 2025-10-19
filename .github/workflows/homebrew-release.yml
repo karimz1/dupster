@@ -9,6 +9,9 @@ jobs:
   release:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout dupster repo
         uses: actions/checkout@v4
@@ -38,7 +41,7 @@ jobs:
         id: poet
         run: |
           pip install -r requirements.txt
-          echo "" > resources.txt
+          : > resources.txt
           for pkg in $(cat requirements.txt | grep -v '^#'); do
             poet --resources $pkg >> resources.txt
             echo "" >> resources.txt
@@ -52,7 +55,7 @@ jobs:
         with:
           repository: karimz1/homebrew-dupster
           path: tap
-          token: ${{ secrets.HOMEBREW_TAP_TOKEN || github.token }}
+          token: ${{ github.token }}
 
       - name: Write Dupster Formula
         run: |
