@@ -37,8 +37,7 @@ jobs:
       - name: Generate resource blocks
         id: poet
         run: |
-          # Read deps from requirements.txt and generate resource stanzas
-          poet $(cat requirements.txt | grep -v '^#') > resources.txt
+          poet --resources $(cat requirements.txt | grep -v '^#') > resources.txt
           echo "resources<<EOF" >> $GITHUB_OUTPUT
           cat resources.txt >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
@@ -90,9 +89,8 @@ jobs:
           git config user.email "actions@github.com"
           git add Formula/dupster.rb
           if git diff --cached --quiet; then
-            echo "✅ No changes to commit."
+            echo "No changes to commit."
           else
             git commit -m "Update Dupster to ${{ steps.vars.outputs.tag }}"
             git push
-            echo "✅ Formula updated successfully!"
           fi
