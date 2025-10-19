@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 # Dupster - Modern Duplicate Finder CLI
 # Copyright (c) 2025 Karim Zouine
-# Licensed under the Apache License, Version 2.0 (the "License");
-# You may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#     http://www.apache.org/licenses/LICENSE-2.0
+# Licensed under the Apache License, Version 2.0
+# https://github.com/karimz1/dupster
 #
 # Requires Python 3.9.6 or newer
 
@@ -24,7 +22,12 @@ from rich.progress import track
 from rich import box
 
 console = Console()
-app = typer.Typer(help="dupster - A modern CLI tool to find and manage duplicate files 🧹")
+
+app = typer.Typer(
+    help="Dupster 🧹 — A modern CLI to find and manage duplicate files.",
+    add_completion=False,        # disables shell completion options
+    no_args_is_help=True         # shows help if run with no args
+)
 
 
 def compute_hash(file_path: str, block_size: int = 65536) -> Optional[str]:
@@ -79,6 +82,7 @@ def find_duplicates(folder_path: str) -> Dict[str, List[str]]:
 
 
 def open_file(file_path: str):
+    """Open a file using the system’s default viewer."""
     try:
         if sys.platform.startswith("darwin"):
             subprocess.call(["open", file_path])
@@ -90,8 +94,30 @@ def open_file(file_path: str):
         console.print(f"[red]Failed to open {file_path}: {e}[/red]")
 
 
-@app.command()
+@app.callback(invoke_without_command=True)
+def main(
+    ctx: typer.Context,
+    folder: Optional[str] = typer.Argument(
+        None,
+        help="Path to the folder you want to scan for duplicates.",
+        metavar="FOLDER"
+    ),
+):
+    """Entry point that runs help or directly scans a folder."""
+    if folder is None:
+        console.print(
+            "\n[bold cyan]Dupster 🧹[/bold cyan] — Modern Duplicate File Finder\n"
+            "Find, preview, and delete duplicate files with a clean, interactive interface.\n"
+            "\n[bold]Usage:[/bold]\n  dupster [FOLDER]\n"
+            "\nExamples:\n  dupster ~/Downloads\n  dupster /Volumes/Backup\n"
+        )
+        raise typer.Exit()
+
+    scan(folder)  # if folder is provided, run scan directly
+
+
 def scan(folder: str):
+    """Scan a folder for duplicate files."""
     folder = os.path.abspath(folder)
     if not os.path.isdir(folder):
         console.print(f"[red]Invalid folder: {folder}[/red]")
