@@ -19,16 +19,40 @@ brew install karimz1/dupster/dupster-cli
 
 Run Dupster in any folder to find duplicates:
 
-``` bash
+```bash
 dupster .
 ```
 
 You’ll see an interactive interface where you can:
 
+- Preview duplicate files side by side using your default viewer
+- Delete duplicates selectively or automatically
+- Enjoy a clean, colorful CLI experience 🧹
 
-- **Preview** duplicate files side by side using your default viewer
-- **Delete** duplicates selectively or automatically
-- **Enjoy** a clean, colorful CLI experience 🧹
+## **🧑‍💻 Run from Source**
+
+Clone the repo and run locally:
+
+```bash
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python dupster.py /path/to/folder
+```
+
+Keyboard shortcuts: `s` scan, `o` open, `i` keep one, `d` delete all (preview), `h/l` focus, `m` maximize, `q` quit
+
+Modal shortcuts: `y` or `Enter` confirm; `q`/`Esc` cancel
+
+## **✅ Tests**
+
+Run the test suite:
+
+```bash
+pytest -q
+```
+
+Core logic (hashing, scanning, planning) is covered by unit tests and separated from the UI for easy maintenance.
 
 
 ## **📦 About**

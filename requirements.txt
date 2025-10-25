@@ -1,2 +1,4 @@
 rich
 typer
+textual
+pytest
