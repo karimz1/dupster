@@ -93,7 +93,7 @@ jobs:
             def install
               venv = virtualenv_create(libexec, "python3.9")
               venv.pip_install resources
-              libexec.install "dupster.py"
+              libexec.install "dupster.py", "src"
               (bin/"dupster").write <<~EOS
                 #!/bin/bash
                 exec "#{libexec}/bin/python" "#{libexec}/dupster.py" "$@"
