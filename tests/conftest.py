@@ -1,5 +1,6 @@
 import zipfile
 from pathlib import Path
+
 import pytest
 
 from dupster.infrastructure.hashing import compute_file_hash
@@ -18,10 +19,14 @@ def dupe_dataset(tmp_path: Path):
     (root / "same-name-2").mkdir(parents=True, exist_ok=True)
     (root / "zip").mkdir(parents=True, exist_ok=True)
 
-    a1 = root / "one" / "a1.bin"; a1.write_bytes(content_a)
-    a2 = root / "two" / "a2.bin"; a2.write_bytes(content_a)
-    b1 = root / "three" / "b1.bin"; b1.write_bytes(content_b)
-    b2 = root / "three" / "b2.bin"; b2.write_bytes(content_b)
+    a1 = root / "one" / "a1.bin"
+    a1.write_bytes(content_a)
+    a2 = root / "two" / "a2.bin"
+    a2.write_bytes(content_a)
+    b1 = root / "three" / "b1.bin"
+    b1.write_bytes(content_b)
+    b2 = root / "three" / "b2.bin"
+    b2.write_bytes(content_b)
     (root / "unique" / "u.bin").write_bytes(b"U" * 512)
     (root / "same-name-1" / "x.txt").write_bytes(b"C" * 512)
     (root / "same-name-2" / "x.txt").write_bytes(b"D" * 512)
@@ -44,4 +49,3 @@ def dupe_dataset(tmp_path: Path):
         "hash_b": hash_b,
         "expected": expected,
     }
-

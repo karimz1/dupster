@@ -10,4 +10,3 @@ def test_dataset_scanner_groups_and_members(dupe_dataset):
     assert set(hm.keys()) == set(expected.keys())
     for h, files in expected.items():
         assert set(hm[h]) == files
-

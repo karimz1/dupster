@@ -1,12 +1,11 @@
-from dataclasses import dataclass
-from typing import List
 import os
+from dataclasses import dataclass
 
 
 @dataclass
 class DuplicateGroup:
     hash: str
-    files: List[str]
+    files: list[str]
     index: int
 
     def potential_savings(self) -> int:
@@ -15,4 +14,3 @@ class DuplicateGroup:
             return sum(sizes) - max(sizes)
         except Exception:
             return 0
-

@@ -1,11 +1,9 @@
-from typing import Dict, List
-
 from dupster.domain.models import DuplicateGroup
 from dupster.infrastructure.filesystem import get_size
 
 
-def groups_from_hash_map(hm: Dict[str, List[str]]) -> List[DuplicateGroup]:
-    items: List[DuplicateGroup] = []
+def groups_from_hash_map(hm: dict[str, list[str]]) -> list[DuplicateGroup]:
+    items: list[DuplicateGroup] = []
     for i, (h, files) in enumerate(sorted(hm.items(), key=lambda kv: kv[0])):
         items.append(DuplicateGroup(hash=h, files=sorted(files), index=i + 1))
     return items
@@ -16,8 +14,8 @@ def keep_one_plan(group: DuplicateGroup, keep_path: str) -> dict:
     return {"group": group.index, "hash": group.hash, "keep": keep_path, "delete": dels}
 
 
-def bulk_delete_plan(groups: List[DuplicateGroup]) -> List[dict]:
-    plan: List[dict] = []
+def bulk_delete_plan(groups: list[DuplicateGroup]) -> list[dict]:
+    plan: list[dict] = []
     for g in groups:
         if not g.files:
             continue
@@ -29,9 +27,8 @@ def bulk_delete_plan(groups: List[DuplicateGroup]) -> List[dict]:
     return plan
 
 
-def total_reclaim_bytes(plan: List[dict]) -> int:
+def total_reclaim_bytes(plan: list[dict]) -> int:
     try:
         return sum(get_size(p) for entry in plan for p in entry["delete"])
     except Exception:
         return 0
-

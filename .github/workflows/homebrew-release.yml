@@ -7,58 +7,129 @@ on:
 
 jobs:
   test:
+    name: Run Tests
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Set up Python
+
+      - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - name: Install deps
+          cache: 'pip'
+
+      - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-      - name: Run tests
-        run: pytest -q
+          pip install pytest pytest-asyncio
 
-  release:
+      - name: Run test suite
+        run: pytest -v
+
+  create-github-release:
+    name: Create GitHub Release
     needs: test
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
+      - name: Extract version from tag
+        id: get_version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Extract changelog for this version
+        id: changelog
+        run: |
+          # Extract changelog section for this version
+          VERSION=${{ steps.get_version.outputs.version }}
+          if [ -f CHANGELOG.md ]; then
+            # Try to extract the section between [VERSION] and next version
+            CHANGES=$(sed -n "/## \[${VERSION}\]/,/## \[/p" CHANGELOG.md | sed '1d;$d')
+            if [ -z "$CHANGES" ]; then
+              CHANGES="See [CHANGELOG.md](CHANGELOG.md) for details."
+            fi
+          else
+            CHANGES="Release version ${VERSION}"
+          fi
+          echo "changes<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: "Release ${{ steps.get_version.outputs.tag }}"
+          body: |
+            ## Dupster ${{ steps.get_version.outputs.tag }}
+            
+            ${{ steps.changelog.outputs.changes }}
+            
+            ### Installation
+            
+            **Homebrew:**
+            ```bash
+            brew tap karimz1/dupster
+            brew install karimz1/dupster/dupster-cli
+            ```
+            
+            **pip:**
+            ```bash
+            pip install git+https://github.com/karimz1/dupster.git@${{ steps.get_version.outputs.tag }}
+            ```
+          draft: false
+          prerelease: false
+
+  homebrew-formula:
+    name: Update Homebrew Formula
+    needs: [test, create-github-release]
+    runs-on: ubuntu-latest
     permissions:
       contents: write
 
     steps:
-      - name: Checkout dupster repo
+      - name: Checkout dupster repository
         uses: actions/checkout@v4
 
-      - name: Get release tag
+      - name: Extract version from tag
         id: vars
-        run: echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          TAG=${GITHUB_REF#refs/tags/}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
 
       - name: Compute tarball SHA256
         id: sha
         run: |
           curl -L -o source.tar.gz https://github.com/${{ github.repository }}/archive/refs/tags/${{ steps.vars.outputs.tag }}.tar.gz
-          echo "sha256=$(sha256sum source.tar.gz | awk '{print $1}')" >> $GITHUB_OUTPUT
+          SHA256=$(sha256sum source.tar.gz | awk '{print $1}')
+          echo "sha256=$SHA256" >> $GITHUB_OUTPUT
 
-      - name: Set up Python 3.9
+      - name: Set up Python 3.11
         uses: actions/setup-python@v5
         with:
-          python-version: "3.9"
+          python-version: "3.11"
+          cache: 'pip'
 
-      - name: Install poet and deps
+      - name: Install homebrew-pypi-poet and dependencies
         run: |
           python -m pip install --upgrade pip
           pip install homebrew-pypi-poet
           pip install -r requirements.txt
 
-      - name: Generate resource blocks
+      - name: Generate Python resource blocks
         id: poet
         run: |
           : > resources.txt
-          for pkg in $(cat requirements.txt | grep -v '^#'); do
+          for pkg in rich typer textual; do
             poet --resources $pkg >> resources.txt
             echo "" >> resources.txt
           done
@@ -66,51 +137,51 @@ jobs:
           cat resources.txt >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Clone Homebrew tap via token
+      - name: Clone Homebrew tap repository
         uses: actions/checkout@v4
         with:
           repository: karimz1/homebrew-dupster
           path: tap
           token: ${{ secrets.HOMEBREW_TAP_TOKEN }}
 
-      - name: Write Dupster Formula
+      - name: Generate Homebrew Formula
         run: |
           mkdir -p tap/Formula
           cat > tap/Formula/dupster-cli.rb <<'RUBY'
           class DupsterCli < Formula
             include Language::Python::Virtualenv
 
-            desc "Modern CLI to find and clean up duplicate files"
+            desc "Modern CLI to find and clean up duplicate files with an interactive TUI"
             homepage "https://github.com/${{ github.repository }}"
             url "https://github.com/${{ github.repository }}/archive/refs/tags/${{ steps.vars.outputs.tag }}.tar.gz"
             sha256 "${{ steps.sha.outputs.sha256 }}"
             license "Apache-2.0"
+            version "${{ steps.vars.outputs.version }}"
 
-            depends_on "python@3.9"
+            depends_on "python@3.11"
 
           ${{ steps.poet.outputs.resources }}
 
             def install
-              venv = virtualenv_create(libexec, "python3.9")
-              venv.pip_install resources
-              libexec.install "dupster.py", "src"
-              (bin/"dupster").write <<~EOS
-                #!/bin/bash
-                exec "#{libexec}/bin/python" "#{libexec}/dupster.py" "$@"
-              EOS
+              # Install Python dependencies in virtualenv
+              virtualenv_install_with_resources
+
+              # The package is now installed via pip (pyproject.toml)
+              # Just ensure the binary is available
             end
 
             test do
-              assert_match "Usage", shell_output("#{bin}/dupster --help")
+              assert_match "Dupster", shell_output("#{bin}/dupster --help")
+              assert_match version.to_s, shell_output("#{bin}/dupster --version")
             end
           end
           RUBY
 
-      - name: Commit and push to tap
+      - name: Commit and push formula to tap
         run: |
           cd tap
-          git config user.name "github-actions"
-          git config user.email "actions@github.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git add Formula/dupster-cli.rb
           if git diff --cached --quiet; then
             echo "No changes to commit."

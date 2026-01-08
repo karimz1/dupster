@@ -1,5 +1,6 @@
 import asyncio
 from pathlib import Path
+
 from dupster.application.scanner import find_duplicates_by_hash_async
 
 
@@ -23,4 +24,3 @@ def test_scanner_finds_duplicates(tmp_path):
 
     dup_counts = sorted(len(v) for v in hm.values())
     assert dup_counts == [2, 2]
-

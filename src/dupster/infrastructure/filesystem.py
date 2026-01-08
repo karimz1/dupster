@@ -2,11 +2,10 @@ import os
 import subprocess
 import sys
 from datetime import datetime
-from typing import List
 
 
-def list_files(root: str) -> List[str]:
-    items: List[str] = []
+def list_files(root: str) -> list[str]:
+    items: list[str] = []
     for r, _, files in os.walk(root):
         for name in files:
             p = os.path.join(r, name)
@@ -40,4 +39,3 @@ def open_file(path: str) -> None:
             subprocess.call(["xdg-open", path])
     except Exception:
         pass
-

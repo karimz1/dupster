@@ -10,4 +10,3 @@ def human_size(n: int) -> str:
             return f"{size:.1f} {u}"
         size /= 1024
     return f"{n} B"
-

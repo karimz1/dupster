@@ -1,5 +1,4 @@
-from pathlib import Path
-from dupster.infrastructure.filesystem import list_files, get_size, get_mtime_str
+from dupster.infrastructure.filesystem import get_mtime_str, get_size, list_files
 
 
 def test_list_files_excludes_dirs_and_is_recursive(tmp_path):
@@ -22,4 +21,3 @@ def test_get_size_and_mtime_str_resilience(tmp_path):
     ts = get_mtime_str(str(p))
     assert isinstance(ts, str) and len(ts) >= 10
     assert get_mtime_str(str(missing)) == "—"
-
