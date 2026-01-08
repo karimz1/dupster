@@ -1,4 +1,4 @@
-rich
-typer
-textual
-pytest
+# Production dependencies
+rich>=13.0,<14.0
+typer>=0.9.0,<1.0.0
+textual>=0.47.0,<1.0.0

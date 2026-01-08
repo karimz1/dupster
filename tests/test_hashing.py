@@ -1,6 +1,5 @@
-import io
-import os
 import zipfile
+
 from dupster.infrastructure.hashing import compute_file_hash, compute_zip_content_hash
 
 
@@ -17,4 +16,3 @@ def test_file_and_zip_content_hash_match(tmp_path):
     assert isinstance(f_hash, str)
     assert isinstance(z_hash, str)
     assert f_hash == z_hash
-

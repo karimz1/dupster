@@ -1,6 +1,7 @@
-import pytest
 import asyncio
 from pathlib import Path
+
+import pytest
 
 textual = pytest.importorskip("textual")
 widgets = pytest.importorskip("textual.widgets")
@@ -28,6 +29,7 @@ def test_tui_lists_groups_and_shows_hash_in_header(dupe_dataset):
             await pilot_mod.wait_for_idle()
             g = app._selected_group()
             assert g is not None and isinstance(g.hash, str) and len(g.hash) == 64
+
     asyncio.run(_run())
 
 
@@ -43,4 +45,5 @@ def test_tui_bulk_delete_preview_modal_open_and_close(dupe_dataset):
             await pilot.press("q")
             await pilot_mod.wait_for_idle()
             assert not list(app.screen.query("#bulk-summary"))
+
     asyncio.run(_run())

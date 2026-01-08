@@ -10,4 +10,3 @@ def test_zip_hash_invalid_returns_none(tmp_path):
     not_zip = tmp_path / "data.txt"
     not_zip.write_text("not a zip")
     assert compute_zip_content_hash(str(not_zip)) is None
-

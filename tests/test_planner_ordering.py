@@ -11,4 +11,3 @@ def test_groups_sorted_by_hash_and_indexed():
     hashes = [g.hash for g in groups]
     assert hashes == sorted(hm.keys())
     assert [g.index for g in groups] == [1, 2, 3]
-

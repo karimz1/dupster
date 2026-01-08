@@ -1,99 +1,238 @@
-# Dupster — Fast Duplicate File Finder (TUI)
-A TUI is a full‑screen terminal interface (keyboard‑first).
-A modern, open‑source duplicate file finder with a fast, keyboard‑first terminal UI. Uses SHA‑256 content hashing (chunked) to detect true duplicates across folders — even inside ZIP archives. Cross‑platform on macOS and Linux.
+<div align="center">
 
-## Tool Demo using iTerm2 on macOS
-Dupster is built for people who live in the terminal. Inspired by Vim’s speed and ergonomics, it delivers a keyboard‑first, distraction‑free way to find and clean duplicate files — perfect for quick audits over SSH or local housekeeping. It’s free, open source, and designed to feel fast and enjoyable.
+# 🧹 Dupster
 
-<img src="images/live-demo.gif" alt="Live Demo"/>
+**Modern Duplicate File Finder with an Interactive TUI**
 
-### 🐍 Requirements
-- Python **3.9.6 or newer**
-- macOS and Linux supported. Windows likely works but is not yet tested. Windows support is planned.
+Fast, safe, and keyboard-driven duplicate detection using SHA-256 content hashing
 
+[![CI](https://github.com/karimz1/dupster/actions/workflows/ci.yml/badge.svg)](https://github.com/karimz1/dupster/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Python](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![Release](https://img.shields.io/github/v/release/karimz1/dupster)](https://github.com/karimz1/dupster/releases)
+[![Homebrew](https://img.shields.io/badge/Homebrew-tap-orange.svg)](https://github.com/karimz1/homebrew-dupster)
+[![Sponsor](https://img.shields.io/badge/Sponsor-GitHub-pink.svg)](https://github.com/sponsors/karimz1)
 
-## Install using Homebrew (Mac and Linux)
+<img src="images/live-demo.gif" alt="Dupster Demo" width="800"/>
 
-tap and install Dupster:
+[Features](#-features) •
+[Installation](#-installation) •
+[Quick Start](#-quick-start) •
+[Documentation](#-documentation) •
+[Contributing](#-contributing)
+
+</div>
+
+---
+
+## 🎯 Overview
+
+Dupster is a **terminal-first** duplicate file finder built for developers, system administrators, and power users who live in the command line. Inspired by Vim's keyboard-driven workflow, it delivers a fast, distraction-free way to find and clean duplicate files.
+
+### Why Dupster?
+
+- **🔐 Safe & Auditable**: Preview exactly what will be deleted before committing
+- **⚡ Fast Content Hashing**: SHA-256 chunked hashing for true duplicate detection
+- **🗜️ ZIP Archive Support**: Finds duplicates inside ZIP files without extraction
+- **⌨️ Keyboard-First**: Vim-inspired shortcuts for maximum efficiency
+- **📦 Cross-Platform**: Works on macOS and Linux (Windows support planned)
+- **🎨 Beautiful TUI**: Clean, focused interface built with Textual
+
+## ✨ Features
+
+| Feature | Description |
+|---------|-------------|
+| **Content-Based Detection** | Uses SHA-256 hashing—not filenames or sizes—to find true duplicates |
+| **ZIP Archive Scanning** | Detects duplicates inside ZIP files without extracting |
+| **Interactive TUI** | Full-screen terminal interface with keyboard shortcuts |
+| **Safe Deletion** | Preview deletion plan and potential space reclaim before executing |
+| **Bulk Operations** | Keep one per group or bulk delete with confirmation |
+| **Open in Viewer** | Launch files in default application directly from TUI |
+| **Progress Tracking** | Real-time scanning progress with file counts |
+| **Async Scanning** | Non-blocking file system traversal for responsiveness |
+
+## 📋 System Requirements
+
+- **Python**: 3.9.6 or newer
+- **OS**: macOS, Linux (Windows support coming soon)
+- **Terminal**: Any modern terminal with Unicode support
+
+## 📦 Installation
+
+### Homebrew (Recommended for macOS/Linux)
 
 ```bash
 brew tap karimz1/dupster
 brew install karimz1/dupster/dupster-cli
 ```
 
+### pip (From Source)
+
+```bash
+pip install git+https://github.com/karimz1/dupster.git
+```
+
+### Development Installation
+
+```bash
+git clone https://github.com/karimz1/dupster.git
+cd dupster
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+pip install -e .
+```
+
 ## 🚀 Quick Start
 
-Run Dupster in any folder to find duplicates:
+### Basic Usage
+
+Scan a directory for duplicates:
+
+```bash
+dupster /path/to/folder
+```
+
+Scan current directory:
 
 ```bash
 dupster .
 ```
 
-You’ll get an interactive TUI where you can:
-
-- Preview and open files in your default viewer
-- Delete duplicates safely (keep one per group, or bulk with preview)
-- See potential space reclaim before deleting
-
-## 🧑‍💻 Run from Source
-
-Clone the repo and run locally:
+Check version:
 
 ```bash
-python -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-python dupster.py /path/to/folder
+dupster --version
 ```
 
-Keyboard shortcuts: `s` scan · `o` open · `i` keep one · `d` delete all (preview) · `h/l` focus · `m` maximize · `q` quit
-Modal: `y`/Enter confirm · `q`/Esc cancel
+### Keyboard Shortcuts
 
-## ✅ Why It’s Useful
+| Key | Action |
+|-----|--------|
+| `s` | Start scan |
+| `o` | Open selected file in default viewer |
+| `i` | Keep one file in group (delete others) |
+| `d` | Delete all files in group (with preview) |
+| `h`/`l` | Focus left/right panel |
+| `m` | Maximize focused panel |
+| `q` | Quit application |
+| `y`/`Enter` | Confirm action in modal |
+| `q`/`Esc` | Cancel modal |
 
-- Finds true duplicates by content, not by filename or size
-- Cleans scattered backups and media libraries with confidence
-- Gives a clear reclaim estimate and a safe, auditable delete plan
+### Example Workflow
 
-## ✅ Tests
+1. **Launch Dupster** in a cluttered directory:
+   ```bash
+   dupster ~/Downloads
+   ```
 
-Quick run:
+2. **Press `s`** to start scanning
+
+3. **Navigate** through duplicate groups using arrow keys
+
+4. **Press `o`** to preview files in your default viewer
+
+5. **Press `i`** to keep one file and delete the rest in that group
+
+6. **Review** the deletion plan showing space you'll reclaim
+
+7. **Press `y`** to confirm and clean up duplicates
+
+## 🎓 Use Cases
+
+### For Photographers
+Clean up duplicate photos from multiple imports:
+```bash
+dupster ~/Pictures/PhotoLibrary
+```
+
+### For Developers
+Find duplicate dependencies, assets, or build artifacts:
+```bash
+dupster ~/Projects
+```
+
+### For System Administrators
+Audit backup directories for redundant files:
+```bash
+dupster /backups
+```
+
+### For Media Libraries
+Identify duplicate music, videos, or documents:
+```bash
+dupster ~/Music ~/Videos ~/Documents
+```
+
+## 📊 Comparison
+
+| Feature | Dupster | fdupes | rdfind | duff |
+|---------|---------|--------|--------|------|
+| Interactive TUI | ✅ | ❌ | ❌ | ❌ |
+| ZIP Support | ✅ | ❌ | ❌ | ❌ |
+| Keyboard-First | ✅ | ❌ | ❌ | ❌ |
+| Safe Preview | ✅ | Limited | Limited | ❌ |
+| Async Scanning | ✅ | ❌ | ❌ | ❌ |
+| SHA-256 | ✅ | MD5/SHA | SHA-1/256 | SHA-1 |
+
+## 📚 Documentation
+
+- **[Developer Guide](DEV_README.md)**: Architecture, testing, and development workflow
+- **[Contributing Guidelines](CONTRIBUTING.md)**: How to contribute to Dupster
+- **[Changelog](CHANGELOG.md)**: Release history and version notes
+
+## 🧪 Testing
+
+Run the test suite:
 
 ```bash
-pytest -q
+pytest -v
 ```
 
-For details on test coverage and structure, see the Developer Guide.
-
-## 🧪 Generate Sample Files
-
-Create a local dataset under `temp/` for interactive testing:
+Generate test data for manual testing:
 
 ```bash
-python tools/generate_dupes.py  # creates temp/dupster_dataset-<timestamp>
-# then run Dupster against it
-python dupster.py temp/
+python tools/generate_dupes.py
+dupster temp/
 ```
 
-The generator creates duplicate groups, optional ZIP‑embedded duplicates, unique files, and same‑filename/different‑content pairs.
+See the [Developer Guide](DEV_README.md) for more testing information.
 
-## 📚 Developer Guide
+## 🤝 Contributing
 
-Read the full guide: [DEV_README.md](DEV_README.md) — architecture, tests, CI, and release workflow.
+I welcome contributions! Please see the [Contributing Guidelines](CONTRIBUTING.md) for:
 
+- Setting up your development environment
+- Code style and testing requirements
+- Pull request process
+- Architecture guidelines
 
-## **📦 About**
+Quick contribution setup:
 
-- **Author:** [Karim Zouine](https://github.com/karimz1)
-- **License:** Apache 2.0
-- **Source:** [github.com/karimz1/dupster](https://github.com/karimz1/dupster)
+```bash
+git clone https://github.com/karimz1/dupster.git
+cd dupster
+pip install -r requirements.txt -r requirements-dev.txt
+pytest -v  # Verify tests pass
+```
 
+## 📄 License
 
-## ❤️ Support Development
+Dupster is licensed under the **Apache License 2.0**. See [LICENSE](LICENSE) for details.
 
+## 👨‍💻 Author
 
-Dupster helped you out? Buy me a coffee, I’ll be smiling all day. 🥳
+**Karim Zouine**
 
-[![Donate with PayPal](https://camo.githubusercontent.com/c39e7a85a94673509c569f43275e7aaf6e39b66f1abbeb82db115333ec20478d/68747470733a2f2f696d672e736869656c64732e696f2f62616467652f446f6e6174652d50617950616c2d626c75653f6c6f676f3d70617970616c)](https://paypal.me/KarimZouine972)
+- GitHub: [@karimz1](https://github.com/karimz1)
+- Project: [github.com/karimz1/dupster](https://github.com/karimz1/dupster)
 
-*(Completely optional, always appreciated.)*
+---
+
+<div align="center">
+
+**[⬆ Back to Top](#-dupster)**
+
+Made with ❤️ by developers who love clean code and clean drives
+
+</div>

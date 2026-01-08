@@ -4,7 +4,6 @@ import os
 import zipfile
 from typing import Optional
 
-
 BLOCK_SIZE = 65536
 
 
@@ -38,4 +37,3 @@ async def compute_hash_async(path: str) -> Optional[str]:
     if ext == ".zip":
         return await asyncio.to_thread(compute_zip_content_hash, path)
     return await asyncio.to_thread(compute_file_hash, path)
-

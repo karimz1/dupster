@@ -2,27 +2,38 @@ from __future__ import annotations
 
 import asyncio
 import os
-import sys
-from typing import List, Optional
 
 from rich.panel import Panel
 from rich.text import Text
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Horizontal, Vertical
-from textual.widgets import Header, Footer, ListView, ListItem, Static, Label, ProgressBar, DataTable
-from textual.screen import ModalScreen
 from textual.message import Message
+from textual.screen import ModalScreen
+from textual.widgets import (
+    DataTable,
+    Footer,
+    Header,
+    Label,
+    ListItem,
+    ListView,
+    ProgressBar,
+    Static,
+)
 
+from dupster.application.planner import (
+    bulk_delete_plan,
+    groups_from_hash_map,
+    total_reclaim_bytes,
+)
 from dupster.application.scanner import find_duplicates_by_hash_async
-from dupster.application.planner import groups_from_hash_map, keep_one_plan, bulk_delete_plan, total_reclaim_bytes
 from dupster.domain.models import DuplicateGroup
 from dupster.infrastructure.filesystem import get_size, open_file
 from dupster.utils.formatting import human_size
 
 
 class ConfirmDelete(Message):
-    def __init__(self, confirmed: bool, keep_file: str, files: List[str]):
+    def __init__(self, confirmed: bool, keep_file: str, files: list[str]):
         super().__init__()
         self.confirmed = confirmed
         self.keep_file = keep_file
@@ -46,7 +57,7 @@ class ConfirmDeleteModal(ModalScreen[bool]):
         Binding("down", "cursor_down", "Down"),
     ]
 
-    def __init__(self, keep_file: str, files: List[str]):
+    def __init__(self, keep_file: str, files: list[str]):
         super().__init__()
         self.keep_file = keep_file
         self.files = files
@@ -61,10 +72,13 @@ class ConfirmDeleteModal(ModalScreen[bool]):
             (" — ", "dim"),
             ("Keep one, remove the rest", "italic dim"),
             ("\n"),
-            ("Keep: ", "italic"), (self.keep_file, ""),
+            ("Keep: ", "italic"),
+            (self.keep_file, ""),
             ("\n"),
-            ("Will delete: ", "italic"), (f"{len(self.files)} file(s)", "bold"),
-            ("   •   Reclaim ≈ ", "dim"), (human_size(self.delete_bytes), "bold"),
+            ("Will delete: ", "italic"),
+            (f"{len(self.files)} file(s)", "bold"),
+            ("   •   Reclaim ≈ ", "dim"),
+            (human_size(self.delete_bytes), "bold"),
             ("\n"),
             ("Use ↑/↓ to navigate.", "dim"),
             ("\n"),
@@ -72,7 +86,9 @@ class ConfirmDeleteModal(ModalScreen[bool]):
         )
         with Vertical(id="confirm-wrap"):
             with Vertical(id="confirm", classes="modal-card"):
-                yield Static(Panel(header_text, border_style="magenta", expand=True), id="confirm-text")
+                yield Static(
+                    Panel(header_text, border_style="magenta", expand=True), id="confirm-text"
+                )
                 with Vertical(id="confirm-body"):
                     table = DataTable(id="confirm-table", cursor_type="row")
                     table.add_columns("Action", "Size", "Path")
@@ -132,11 +148,15 @@ class BulkDeleteModal(ModalScreen[bool]):
         header_text = Text.assemble(
             ("△ Delete ALL duplicates (preview)", "bold bright_yellow"),
             ("\n"),
-            ("Groups: ", "italic"), (str(total_groups), "bold"),
-            ("  •  Files to delete: ", "italic"), (str(total_deletes), "bold"),
-            ("  •  Reclaim ≈ ", "italic"), (human_size(self.total_bytes), "bold"),
+            ("Groups: ", "italic"),
+            (str(total_groups), "bold"),
+            ("  •  Files to delete: ", "italic"),
+            (str(total_deletes), "bold"),
+            ("  •  Reclaim ≈ ", "italic"),
+            (human_size(self.total_bytes), "bold"),
             ("\n"),
-            ("Policy: keep the ", "dim"), ("first file per group", "italic"),
+            ("Policy: keep the ", "dim"),
+            ("first file per group", "italic"),
             (" (alphabetical by name).", "dim"),
             ("\n"),
             ("Use ↑/↓ to navigate. Select a group to view files.", "dim"),
@@ -145,7 +165,9 @@ class BulkDeleteModal(ModalScreen[bool]):
         )
         with Vertical(id="bulk-wrap"):
             with Vertical(id="bulk", classes="modal-card"):
-                yield Static(Panel(header_text, border_style="magenta", expand=True), id="bulk-text")
+                yield Static(
+                    Panel(header_text, border_style="magenta", expand=True), id="bulk-text"
+                )
                 with Vertical(id="bulk-body"):
                     summary = DataTable(id="bulk-summary", cursor_type="row")
                     summary.add_columns("Group #", "Hash (short)", "Keep (path)", "Delete count")
@@ -260,21 +282,23 @@ class DupsterApp(App):
         Binding("m", "toggle_maximize", "Maximize"),
     ]
 
-    def __init__(self, folder: Optional[str] = None) -> None:
+    def __init__(self, folder: str | None = None) -> None:
         super().__init__()
         self.folder = folder or os.path.expanduser("~")
-        self.groups: List[DuplicateGroup] = []
-        self.current_group_idx: Optional[int] = None
-        self.current_file_idx: Optional[int] = None
-        self._maximized: Optional[str] = None
+        self.groups: list[DuplicateGroup] = []
+        self.current_group_idx: int | None = None
+        self.current_file_idx: int | None = None
+        self._maximized: str | None = None
 
     def _group_panel(self, g: DuplicateGroup):
         files_count = len(g.files)
         reclaim = human_size(g.potential_savings())
         return Text.assemble(
             (f"Group #{g.index}", "bold"),
-            ("  •  Files: ", "dim"), (str(files_count), "bold"),
-            ("  •  Potential reclaim: ", "dim"), (reclaim, "bold"),
+            ("  •  Files: ", "dim"),
+            (str(files_count), "bold"),
+            ("  •  Potential reclaim: ", "dim"),
+            (reclaim, "bold"),
         )
 
     def on_mount(self) -> None:
@@ -287,7 +311,7 @@ class DupsterApp(App):
                 yield Static("[b]Duplicate Groups[/b]", id="grouplabel")
                 yield ListView(id="groups")
                 yield Static(
-                    "Root: [b]{}[/b]\n[i]Press [b]s[/b] to scan.".format(self.folder),
+                    f"Root: [b]{self.folder}[/b]\n[i]Press [b]s[/b] to scan.",
                     id="pathinfo",
                 )
             with Vertical(id="right", classes="pane inactive"):
@@ -301,23 +325,19 @@ class DupsterApp(App):
         summary_widget = self.query_one("#summary", Static)
         if not self.groups:
             summary_widget.update(
-                (
-                    "[green]✅ No duplicates found![/green]\n"
-                    "[i]Shortcuts:[/i] [b]s[/b]=Scan  [b]h/l[/b]=Focus Left/Right  "
-                    "[b]m[/b]=Maximize  [b]o[/b]=Open  [b]i[/b]=Keep One Copy  [b]d[/b]=Delete ALL (Preview)"
-                )
+                "[green]✅ No duplicates found![/green]\n"
+                "[i]Shortcuts:[/i] [b]s[/b]=Scan  [b]h/l[/b]=Focus Left/Right  "
+                "[b]m[/b]=Maximize  [b]o[/b]=Open  [b]i[/b]=Keep One Copy  [b]d[/b]=Delete ALL (Preview)"
             )
             return
         total_groups = len(self.groups)
         files_involved = sum(len(g.files) for g in self.groups)
         savings = sum(g.potential_savings() for g in self.groups)
         summary_widget.update(
-            (
-                "[bold yellow]⚠️ Found {total} duplicate groups[/bold yellow]\n"
-                "Files involved: [b]{files}[/b] | Potential reclaim: [b]{savings}[/b]\n"
-                "[i]Tip:[/i] Use ↑/↓ in Groups, then ↑/↓ in Files. Press [b]o[/b] to open, "
-                "[b]i[/b] to keep one copy, [b]d[/b] to preview delete-all."
-            ).format(total=total_groups, files=files_involved, savings=human_size(savings))
+            f"[bold yellow]⚠️ Found {total_groups} duplicate groups[/bold yellow]\n"
+            f"Files involved: [b]{files_involved}[/b] | Potential reclaim: [b]{human_size(savings)}[/b]\n"
+            "[i]Tip:[/i] Use ↑/↓ in Groups, then ↑/↓ in Files. Press [b]o[/b] to open, "
+            "[b]i[/b] to keep one copy, [b]d[/b] to preview delete-all."
         )
 
     async def action_scan(self) -> None:
@@ -359,7 +379,9 @@ class DupsterApp(App):
         if not g:
             return
         try:
-            self.query_one("#filelabel", Static).update(f"[b]Files in Group[/b]  •  [dim]SHA256:[/dim] {g.hash}")
+            self.query_one("#filelabel", Static).update(
+                f"[b]Files in Group[/b]  •  [dim]SHA256:[/dim] {g.hash}"
+            )
         except Exception:
             pass
         for i, p in enumerate(g.files):
@@ -407,7 +429,7 @@ class DupsterApp(App):
             self.notify("Deletion cancelled.")
             return
         deleted = 0
-        errors: List[str] = []
+        errors: list[str] = []
         for f in event.files:
             try:
                 os.remove(f)
@@ -457,13 +479,17 @@ class DupsterApp(App):
                 if focused is not None and (left in focused.ancestors):
                     target = "left"
                 if target == "left":
-                    right.add_class("hidden"); left.add_class("max")
+                    right.add_class("hidden")
+                    left.add_class("max")
                 else:
-                    left.add_class("hidden"); right.add_class("max")
+                    left.add_class("hidden")
+                    right.add_class("max")
                 self._maximized = target
             else:
-                left.remove_class("hidden"); right.remove_class("hidden")
-                left.remove_class("max"); right.remove_class("max")
+                left.remove_class("hidden")
+                right.remove_class("hidden")
+                left.remove_class("max")
+                right.remove_class("max")
                 self._maximized = None
         except Exception:
             pass
@@ -473,7 +499,11 @@ class DupsterApp(App):
             groups_lv = self.query_one("#groups", ListView)
             left = self.query_one("#left")
             right = self.query_one("#right")
-            if self.groups and (self.current_group_idx is None or self.current_group_idx < 0 or self.current_group_idx >= len(self.groups)):
+            if self.groups and (
+                self.current_group_idx is None
+                or self.current_group_idx < 0
+                or self.current_group_idx >= len(self.groups)
+            ):
                 self.current_group_idx = 0
                 try:
                     groups_lv.index = 0
@@ -481,8 +511,10 @@ class DupsterApp(App):
                     pass
                 self._refresh_files_list()
             groups_lv.focus()
-            left.add_class("active"); left.remove_class("inactive")
-            right.add_class("inactive"); right.remove_class("active")
+            left.add_class("active")
+            left.remove_class("inactive")
+            right.add_class("inactive")
+            right.remove_class("active")
         except Exception:
             pass
 
@@ -495,19 +527,29 @@ class DupsterApp(App):
                 self.current_group_idx = 0
                 self._refresh_files_list()
             g = self._selected_group()
-            if g and g.files and (self.current_file_idx is None or self.current_file_idx < 0 or self.current_file_idx >= len(g.files)):
+            if (
+                g
+                and g.files
+                and (
+                    self.current_file_idx is None
+                    or self.current_file_idx < 0
+                    or self.current_file_idx >= len(g.files)
+                )
+            ):
                 self.current_file_idx = 0
                 try:
                     files_lv.index = 0
                 except Exception:
                     pass
             files_lv.focus()
-            right.add_class("active"); right.remove_class("inactive")
-            left.add_class("inactive"); left.remove_class("active")
+            right.add_class("active")
+            right.remove_class("inactive")
+            left.add_class("inactive")
+            left.remove_class("active")
         except Exception:
             pass
 
-    def _selected_group(self) -> Optional[DuplicateGroup]:
+    def _selected_group(self) -> DuplicateGroup | None:
         gi = self.current_group_idx
         if gi is None:
             return None
@@ -515,7 +557,7 @@ class DupsterApp(App):
             return None
         return self.groups[gi]
 
-    def _selected_file(self) -> Optional[str]:
+    def _selected_file(self) -> str | None:
         g = self._selected_group()
         if not g:
             return None

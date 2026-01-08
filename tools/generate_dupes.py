@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
-import hashlib
-import os
 import random
 import shutil
+import zipfile
 from datetime import datetime
 from pathlib import Path
-import zipfile
+
 import typer
 
-
-app = typer.Typer(help="Generate a local dataset of duplicate/unique files for Dupster demos.", add_completion=False)
+app = typer.Typer(
+    help="Generate a local dataset of duplicate/unique files for Dupster demos.",
+    add_completion=False,
+)
 
 
 def _content_for_group(group: int, size_kb: int) -> bytes:
@@ -28,12 +29,19 @@ def _write(path: Path, data: bytes) -> Path:
 
 @app.command()
 def main(
-    root: Path = typer.Option(None, help="Target root directory under repo (e.g., temp/dataset)", dir_okay=True, file_okay=False),
+    root: Path = typer.Option(
+        None,
+        help="Target root directory under repo (e.g., temp/dataset)",
+        dir_okay=True,
+        file_okay=False,
+    ),
     groups: int = typer.Option(3, min=1, help="Number of duplicate groups"),
     copies: int = typer.Option(3, min=2, help="Copies per duplicate group"),
     size_kb: int = typer.Option(64, min=1, help="Approx size per file in KB"),
     unique: int = typer.Option(2, min=0, help="Number of unique files to generate"),
-    same_name_pairs: int = typer.Option(1, min=0, help="Pairs of same filename with different content"),
+    same_name_pairs: int = typer.Option(
+        1, min=0, help="Pairs of same filename with different content"
+    ),
     include_zip: bool = typer.Option(True, help="Include a ZIP that contains duplicate content"),
     clean: bool = typer.Option(False, help="If target exists, delete it first"),
 ):
