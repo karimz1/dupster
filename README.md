@@ -1,10 +1,10 @@
-<div align="center">
+# Dupster
 
-# 🧹 Dupster
+**A very easy terminal UI for finding duplicates when you're stuck in the terminal like me and would rather see your duplicates files than memorize CLI flags.**
 
-**Modern Duplicate File Finder with an Interactive TUI**
+<div align="center"> 
 
-Fast, safe, and keyboard-driven duplicate detection using SHA-256 content hashing
+<img src="images/live-demo.gif" alt="Dupster Demo" width="800"/>
 
 [![CI](https://github.com/karimz1/dupster/actions/workflows/ci.yml/badge.svg)](https://github.com/karimz1/dupster/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
@@ -13,226 +13,96 @@ Fast, safe, and keyboard-driven duplicate detection using SHA-256 content hashin
 [![Homebrew](https://img.shields.io/badge/Homebrew-tap-orange.svg)](https://github.com/karimz1/homebrew-dupster)
 [![Sponsor](https://img.shields.io/badge/Sponsor-GitHub-pink.svg)](https://github.com/sponsors/karimz1)
 
-<img src="images/live-demo.gif" alt="Dupster Demo" width="800"/>
-
-[Features](#-features) •
-[Installation](#-installation) •
-[Quick Start](#-quick-start) •
-[Documentation](#-documentation) •
-[Contributing](#-contributing)
-
 </div>
+------
 
----
+### Why I built this
 
-## 🎯 Overview
+I mostly made this because I wanted to actually *see* what I was deleting without leaving the terminal. If you've ever SSH'd into a remote Linux server and felt a bit nervous running a bulk-delete command on a bunch of duplicate files, you'll get why I made this.
 
-Dupster is a **terminal-first** duplicate file finder built for developers, system administrators, and power users who live in the command line. Inspired by Vim's keyboard-driven workflow, it delivers a fast, distraction-free way to find and clean duplicate files.
+I wanted a tool where I didn't have to remember complex flags or commands. I wanted something that:
 
-### Why Dupster?
+- **Feels like a desktop app:** An interactive list where you can scroll and check things.
+- **Groups everything visually:** You can see exactly which files are clones / duplicates of each other in a single group.
+- **Shows the details:** It shows you the file hash so you can be 100% sure that "ah, okay, these really are the same" before you hit delete.
 
-- **🔐 Safe & Auditable**: Preview exactly what will be deleted before committing
-- **⚡ Fast Content Hashing**: SHA-256 chunked hashing for true duplicate detection
-- **🗜️ ZIP Archive Support**: Finds duplicates inside ZIP files without extraction
-- **⌨️ Keyboard-First**: Vim-inspired shortcuts for maximum efficiency
-- **📦 Cross-Platform**: Works on macOS and Linux (Windows support planned)
-- **🎨 Beautiful TUI**: Clean, focused interface built with Textual
+It’s basically a "middle ground" for people who like the terminal but miss the visual clarity of a GUI.
 
-## ✨ Features
+**Note on Speed:** This is a hobby project and it is **not fast** yet. It does a full SHA-256 hash on every file to make sure it's 100% accurate. If you're scanning big files, it will take a while. I’m working on making it faster as I learn more.
 
-| Feature | Description |
-|---------|-------------|
-| **Content-Based Detection** | Uses SHA-256 hashing—not filenames or sizes—to find true duplicates |
-| **ZIP Archive Scanning** | Detects duplicates inside ZIP files without extracting |
-| **Interactive TUI** | Full-screen terminal interface with keyboard shortcuts |
-| **Safe Deletion** | Preview deletion plan and potential space reclaim before executing |
-| **Bulk Operations** | Keep one per group or bulk delete with confirmation |
-| **Open in Viewer** | Launch files in default application directly from TUI |
-| **Progress Tracking** | Real-time scanning progress with file counts |
-| **Async Scanning** | Non-blocking file system traversal for responsiveness |
+------
 
-## 📋 System Requirements
+### Current limitations & "Maybe" features
 
-- **Python**: 3.9.6 or newer
-- **OS**: macOS, Linux (Windows support coming soon)
-- **Terminal**: Any modern terminal with Unicode support
+Since I'm just building this for fun/utility, there are a few things it doesn't do yet:
 
-## 📦 Installation
+- **Speed:** It’s slow on large datasets because it doesn't pre-filter by file size yet.
+- **OS Support:** Works great on macOS and Linux. Windows is still a bit hit-or-miss.
+- **Hashing:** It does full hashing only. I'm thinking about adding partial hashing (checking just the first few KB) later to speed things up. But not sure about it yet. 
 
-### Homebrew (Recommended for macOS/Linux)
+------
+
+### Installation
+
+**Homebrew** (Recommended so you can get easy updates)
 
 ```bash
 brew tap karimz1/dupster
 brew install karimz1/dupster/dupster-cli
 ```
 
-### pip (From Source)
-
-```bash
-pip install git+https://github.com/karimz1/dupster.git
-```
-
-### Development Installation
+**From Source**
 
 ```bash
 git clone https://github.com/karimz1/dupster.git
 cd dupster
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -r requirements.txt
-pip install -e .
+pip install .
 ```
 
-## 🚀 Quick Start
+------
 
-### Basic Usage
+### How to use it
 
-Scan a directory for duplicates:
+Just point it at a directory:
 
 ```bash
-dupster /path/to/folder
+dupster ~/Downloads
 ```
 
-Scan current directory:
+**Controls:**
 
-```bash
-dupster .
-```
+You will see all controls and shortcut in the UI when you start dupster but here is a little list:
 
-Check version:
+- `s`: Start the scan.
+- `h` / `l`: Move between the list and the file details.
+- `o`: Open the file (to double-check it's the one you want).
+- `i`: **Keep only this** (Deletes all other duplicates in that group).
+- `d`: **Delete all** (Removes the whole group).
+- `q`: Quit.
 
-```bash
-dupster --version
-```
+------
 
-### Keyboard Shortcuts
+### How it compares
 
-| Key | Action |
-|-----|--------|
-| `s` | Start scan |
-| `o` | Open selected file in default viewer |
-| `i` | Keep one file in group (delete others) |
-| `d` | Delete all files in group (with preview) |
-| `h`/`l` | Focus left/right panel |
-| `m` | Maximize focused panel |
-| `q` | Quit application |
-| `y`/`Enter` | Confirm action in modal |
-| `q`/`Esc` | Cancel modal |
+If you actually need raw speed for massive amounts of data, I highly recommend these instead:
 
-### Example Workflow
+**Disclamer** Not affiliated at all. I just use their tools and honestly, they’re incredible.
 
-1. **Launch Dupster** in a cluttered directory:
-   ```bash
-   dupster ~/Downloads
-   ```
+- [fclones](https://github.com/pkolaczk/fclones) - Incredible speed, written in Rust.
+- [fdupes](https://github.com/adrianlopezroche/fdupes) - The standard tool most people use.
+- [rdfind](https://github.com/pauldreik/rdfind) - Great for replacing dupes with links.
 
-2. **Press `s`** to start scanning
+**Dupster** is just for when you want to "see" what's happening in a terminal ui and don't want to memorize all CLI flags, I must admit I'm kinda this person.
 
-3. **Navigate** through duplicate groups using arrow keys
+------
 
-4. **Press `o`** to preview files in your default viewer
+### Contributing
 
-5. **Press `i`** to keep one file and delete the rest in that group
+If you're a developer and want to help me make this faster, I'd love the help. It’s mostly a learning / side-project for me, so if you want to fork it and open a PR with performance improvements (like file-size filtering or multi-threading), I'd be happy to add you as a co-author.
 
-6. **Review** the deletion plan showing space you'll reclaim
+- **Tests:** Run `pytest -v`.
+- **Dummy Data:** I included a script at `tools/generate_dupes.py` that creates a folder of fake duplicates so you can test things without breaking your real files.
 
-7. **Press `y`** to confirm and clean up duplicates
+**Author:** [Karim Zouine](https://github.com/karimz1)
 
-## 🎓 Use Cases
-
-### For Photographers
-Clean up duplicate photos from multiple imports:
-```bash
-dupster ~/Pictures/PhotoLibrary
-```
-
-### For Developers
-Find duplicate dependencies, assets, or build artifacts:
-```bash
-dupster ~/Projects
-```
-
-### For System Administrators
-Audit backup directories for redundant files:
-```bash
-dupster /backups
-```
-
-### For Media Libraries
-Identify duplicate music, videos, or documents:
-```bash
-dupster ~/Music ~/Videos ~/Documents
-```
-
-## 📊 Comparison
-
-| Feature | Dupster | fdupes | rdfind | duff |
-|---------|---------|--------|--------|------|
-| Interactive TUI | ✅ | ❌ | ❌ | ❌ |
-| ZIP Support | ✅ | ❌ | ❌ | ❌ |
-| Keyboard-First | ✅ | ❌ | ❌ | ❌ |
-| Safe Preview | ✅ | Limited | Limited | ❌ |
-| Async Scanning | ✅ | ❌ | ❌ | ❌ |
-| SHA-256 | ✅ | MD5/SHA | SHA-1/256 | SHA-1 |
-
-## 📚 Documentation
-
-- **[Developer Guide](DEV_README.md)**: Architecture, testing, and development workflow
-- **[Contributing Guidelines](CONTRIBUTING.md)**: How to contribute to Dupster
-- **[Changelog](CHANGELOG.md)**: Release history and version notes
-
-## 🧪 Testing
-
-Run the test suite:
-
-```bash
-pytest -v
-```
-
-Generate test data for manual testing:
-
-```bash
-python tools/generate_dupes.py
-dupster temp/
-```
-
-See the [Developer Guide](DEV_README.md) for more testing information.
-
-## 🤝 Contributing
-
-I welcome contributions! Please see the [Contributing Guidelines](CONTRIBUTING.md) for:
-
-- Setting up your development environment
-- Code style and testing requirements
-- Pull request process
-- Architecture guidelines
-
-Quick contribution setup:
-
-```bash
-git clone https://github.com/karimz1/dupster.git
-cd dupster
-pip install -r requirements.txt -r requirements-dev.txt
-pytest -v  # Verify tests pass
-```
-
-## 📄 License
-
-Dupster is licensed under the **Apache License 2.0**. See [LICENSE](LICENSE) for details.
-
-## 👨‍💻 Author
-
-**Karim Zouine**
-
-- GitHub: [@karimz1](https://github.com/karimz1)
-- Project: [github.com/karimz1/dupster](https://github.com/karimz1/dupster)
-
----
-
-<div align="center">
-
-**[⬆ Back to Top](#-dupster)**
-
-Made with ❤️ by developers who love clean code and clean drives
-
-</div>
+**License:** Apache 2.0

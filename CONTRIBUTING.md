@@ -1,175 +1,29 @@
 # Contributing to Dupster
 
-Thank you for your interest in contributing to Dupster! I welcome contributions from the community.
+First off, thanks for even looking at this file!
 
-## Getting Started
+Dupster is a personal project I started because I wanted a better way to handle duplicates over SSH. I’m definitely not an expert in high-performance file scanning, so if you see something that could be done better, I’d love to improve it with you.
 
-### Development Setup
+## How you can help
 
-1. **Fork and clone the repository**
-   ```bash
-   git clone https://github.com/karimz1/dupster.git
-   cd dupster
-   ```
+Since the main goal is to move this from a "fun project" to something that is actually fast, here are some things I’m currently thinking about:
 
-2. **Create a virtual environment**
-   ```bash
-   python -m venv venv
-   source venv/bin/activate
-   ```
+- **Speed:** Adding file-size pre-filtering (so we don't hash unique files).
+- **Parallelism:** Making the hashing happen on multiple cores.
+- **UI/UX:** Tweaks to the Textual interface to make it even smoother.
+- **Bug Fixes:** Especially if you're testing on different Linux distros or macOS.
 
-3. **Install dependencies**
-   ```bash
-   pip install -r requirements.txt
-   pip install -r requirements-dev.txt
-   ```
+## Simple Workflow
 
-4. **Run tests to verify setup**
-   ```bash
-   pytest -v
-   ```
+1. **Fork & Clone:** Grab the code and set it up locally.
+2. **Play around:** Use `python tools/generate_dupes.py` to create a safe testing environment so you don't accidentally delete your own files while coding.
+3. **Run Tests:** I use `pytest` to make sure I haven't broken the core logic.
+4. **Open a PR:** Don't worry about making it perfect. Just describe what you changed and why.
 
-## Development Workflow
+## Philosophy
 
-### Running Dupster Locally
+I want to keep this tool **simple** and **visual**. If you have a huge new feature idea, maybe open an Issue first just so we can chat about it!
 
-```bash
-python dupster.py /path/to/test/folder
-```
+If you contribute, please add your name to the **Authors** section in the PR. I’d be happy to have you as a co-author on the project.
 
-Or install in editable mode:
-```bash
-pip install -e .
-dupster /path/to/test/folder
-```
-
-### Code Style
-
-Dupster uses **Black** for code formatting and **Ruff** for linting.
-
-**Format your code:**
-```bash
-black .
-```
-
-**Lint your code:**
-```bash
-ruff check .
-```
-
-**Auto-fix linting issues:**
-```bash
-ruff check --fix .
-```
-
-### Testing
-
-Run the full test suite:
-```bash
-pytest -v
-```
-
-Run specific tests:
-```bash
-pytest tests/test_scanner.py -v
-pytest tests/test_scanner.py::test_specific_function -v
-```
-
-Run tests with coverage:
-```bash
-pytest --cov=src/dupster --cov-report=html
-```
-
-### Generating Test Data
-
-Use the test data generator:
-```bash
-python tools/generate_dupes.py
-```
-
-This creates a realistic duplicate file dataset under `temp/` for manual testing.
-
-## Architecture Guidelines
-
-Dupster follows **Clean Architecture** principles:
-
-- **Domain** (`src/dupster/domain/`): Core business logic and entities
-- **Application** (`src/dupster/application/`): Use cases (scanner, planner)
-- **Infrastructure** (`src/dupster/infrastructure/`): External dependencies (filesystem, hashing)
-- **UI** (`src/dupster/ui/`): User interfaces (CLI, TUI)
-- **Utils** (`src/dupster/utils/`): Shared utilities
-
-### Coding Principles
-
-- **Single Responsibility**: Each function/class should do one thing well
-- **Testability**: Application layer should be easy to test without UI
-- **Small Functions**: Keep functions focused and under 20 lines when possible
-- **Type Hints**: Use type annotations for better IDE support
-- **Docstrings**: Add docstrings to public functions and classes
-
-## Submitting Changes
-
-### Creating a Pull Request
-
-1. **Create a feature branch**
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
-
-2. **Make your changes**
-   - Write clean, well-documented code
-   - Add tests for new features
-   - Update documentation if needed
-
-3. **Run tests and linting**
-   ```bash
-   black .
-   ruff check .
-   pytest -v
-   ```
-
-4. **Commit your changes**
-   ```bash
-   git add .
-   git commit -m "Add: Brief description of your changes"
-   ```
-
-   Use conventional commit prefixes:
-   - `Add:` for new features
-   - `Fix:` for bug fixes
-   - `Update:` for changes to existing features
-   - `Refactor:` for code refactoring
-   - `Docs:` for documentation
-   - `Test:` for test-related changes
-
-5. **Push to your fork**
-   ```bash
-   git push origin feature/your-feature-name
-   ```
-
-6. **Open a Pull Request** on GitHub
-   - Provide a clear description of your changes
-   - Reference any related issues
-   - Ensure CI tests pass
-
-## Reporting Issues
-
-Found a bug? Have a feature request?
-
-1. Check if the issue already exists in [GitHub Issues](https://github.com/karimz1/dupster/issues)
-2. If not, create a new issue with:
-   - Clear title and description
-   - Steps to reproduce (for bugs)
-   - Expected vs actual behavior
-   - Your environment (OS, Python version)
-
-## Code of Conduct
-
-- Be respectful and constructive
-- Welcome newcomers and help them get started
-- Focus on what's best for the project
-- Show empathy towards other contributors
-
----
-
-**Thank you for contributing to Dupster!** 🎉
+**Thanks for helping me make this little tool better!**
