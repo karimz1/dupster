@@ -29,7 +29,7 @@ I wanted a tool where I didn't have to remember complex flags or commands. I wan
 
 It’s basically a "middle ground" for people who like the terminal but miss the visual clarity of a GUI.
 
-**Note on Speed:** This is a hobby project and it is **not fast** yet. It does a full SHA-256 hash on every file to make sure it's 100% accurate. If you're scanning big files, it will take a while. I’m working on making it faster as I learn more.
+**Note on Speed:** This is a hobby project and it is **not fast** yet. It does a full SHA-256 hash on every file to make sure it's 100% accurate. If you're scanning big files, it will take a while. I’m working on making it faster.
 
 ------
 
@@ -39,7 +39,6 @@ Since I'm just building this for fun/utility, there are a few things it doesn't 
 
 - **Speed:** It’s slow on large datasets because it doesn't pre-filter by file size yet.
 - **OS Support:** Works great on macOS and Linux. Windows is still a bit hit-or-miss.
-- **Hashing:** It does full hashing only. I'm thinking about adding partial hashing (checking just the first few KB) later to speed things up. But not sure about it yet. 
 
 ------
 
