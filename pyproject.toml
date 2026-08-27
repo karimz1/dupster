@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dupster-cli"
-version = "0.0.7"
+version = "0.0.8"
 description = "Modern CLI to find and clean up duplicate files with an interactive TUI"
 readme = "README.md"
 license = {text = "Apache-2.0"}

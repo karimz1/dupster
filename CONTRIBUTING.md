@@ -6,12 +6,18 @@ Dupster is a personal project I started because I wanted a better way to handle 
 
 ## How you can help
 
-Since the main goal is to move this from a "fun project" to something that is actually fast, here are some things I’m currently thinking about:
+The staged scanner (size, then inode, then partial hashes, then SHA-256) and per-drive read
+scheduling are in place now. Things I’m still thinking about:
 
-- **Speed:** Adding file-size pre-filtering (so we don't hash unique files).
-- **Parallelism:** Making the hashing happen on multiple cores.
+- **Hardlink awareness:** Marking groups that are hardlinks, since deleting those frees nothing.
+- **A hash cache on disk:** Right now hashes only survive for the lifetime of the session.
+- **Physical block ordering:** Reading in `FIEMAP` order on Linux rather than inode order.
 - **UI/UX:** Tweaks to the Textual interface to make it even smoother.
-- **Bug Fixes:** Especially if you're testing on different Linux distros or macOS.
+- **Bug Fixes:** Especially if you're testing on different Linux distros, Windows, or spinning disks.
+
+If you change the scanner, note that `tests/test_scanner_staged.py` compares it against a
+brute-force reference over randomly generated adversarial trees. That is the test that matters.
+`tools/benchmark.py` will tell you whether a change actually helped.
 
 ## Simple Workflow
 

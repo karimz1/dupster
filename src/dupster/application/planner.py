@@ -1,11 +1,23 @@
+from typing import Optional
+
 from dupster.domain.models import DuplicateGroup
 from dupster.infrastructure.filesystem import get_size
 
 
-def groups_from_hash_map(hm: dict[str, list[str]]) -> list[DuplicateGroup]:
+def groups_from_hash_map(
+    hm: dict[str, list[str]], sizes: Optional[dict] = None
+) -> list[DuplicateGroup]:
     items: list[DuplicateGroup] = []
     for i, (h, files) in enumerate(sorted(hm.items(), key=lambda kv: kv[0])):
-        items.append(DuplicateGroup(hash=h, files=sorted(files), index=i + 1))
+        ordered = sorted(files)
+        # The scanner already knows every size, so pass it through and spare the
+        # UI a stat call per file on every redraw.
+        size = 0
+        if sizes:
+            known = [sizes[f] for f in ordered if f in sizes]
+            if known:
+                size = min(known)
+        items.append(DuplicateGroup(hash=h, files=ordered, index=i + 1, size=size))
     return items
 
 

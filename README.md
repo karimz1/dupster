@@ -1,58 +1,63 @@
 # Dupster
 
-**A very easy terminal UI for finding duplicates when you're stuck in the terminal like me and would rather see your duplicates files than memorize CLI flags.**
+**Dupster is a fast open source duplicate file finder with a modern terminal UI for macOS and Linux.**
 
-<div align="center"> 
+Use it to scan folders, review duplicate files, copy full file paths, open files, and safely preview cleanup from the command line.
 
-<img src="images/live-demo.gif" alt="Dupster Demo" width="800"/>
+<div align="center">
+
+<img src="images/dupster-logo.svg" alt="Dupster logo" width="520"/>
+
+<br/>
+<br/>
+
+<img src="images/live-demo.gif" alt="Dupster duplicate file finder terminal UI demo" width="800"/>
 
 [![CI](https://github.com/karimz1/dupster/actions/workflows/ci.yml/badge.svg)](https://github.com/karimz1/dupster/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![Release](https://img.shields.io/github/v/release/karimz1/dupster)](https://github.com/karimz1/dupster/releases)
-[![Homebrew](https://img.shields.io/badge/Homebrew-tap-orange.svg)](https://github.com/karimz1/homebrew-dupster)
+[![Homebrew](https://img.shields.io/badge/Homebrew-official%20tap-orange.svg)](https://github.com/karimz1/homebrew-dupster)
+[![Featured on LinuxLinks](https://img.shields.io/badge/Featured%20on-LinuxLinks-2EA44F.svg)](https://www.linuxlinks.com/dupster-duplicate-file-finder/)
 [![Sponsor](https://img.shields.io/badge/Sponsor-GitHub-pink.svg)](https://github.com/sponsors/karimz1)
+
+Featured on [LinuxLinks](https://www.linuxlinks.com/dupster-duplicate-file-finder/).
 
 </div>
 
 ------
 
-### Why I built this
+### Why I Built This
 
-I mostly made this because I wanted to actually *see* what I was deleting without leaving the terminal. If you've ever SSH'd into a remote Linux server and felt a bit nervous running a bulk-delete command on a bunch of duplicate files, you'll get why I made this.
+I built Dupster because I wanted to actually see duplicate files before deleting them, without leaving the terminal. It is for people who like the speed of a CLI but still want the visual confidence of a small desktop app when cleaning real folders, servers, drives, media libraries, and backups.
 
-I wanted a tool where I didn't have to remember complex flags or commands. I wanted something that:
-
-- **Feels like a desktop app:** An interactive list where you can scroll and check things.
-- **Groups everything visually:** You can see exactly which files are clones / duplicates of each other in a single group.
-- **Shows the details:** It shows you the file hash so you can be 100% sure that "ah, okay, these really are the same" before you hit delete.
-
-It’s basically a "middle ground" for people who like the terminal but miss the visual clarity of a GUI.
-
-**Note on Speed:** This is a hobby project and it is **not fast** yet. It does a full SHA-256 hash on every file to make sure it's 100% accurate. If you're scanning big files, it will take a while. I’m working on making it faster as I learn more.
+I also wanted a duplicate file finder that does not make you memorize flags just to do the basic thing safely.
 
 ------
 
-### Current limitations & "Maybe" features
+### Features
 
-Since I'm just building this for fun/utility, there are a few things it doesn't do yet:
-
-- **Speed:** It’s slow on large datasets because it doesn't pre-filter by file size yet.
-- **OS Support:** Works great on macOS and Linux. Windows is still a bit hit-or-miss.
-- **Hashing:** It does full hashing only. I'm thinking about adding partial hashing (checking just the first few KB) later to speed things up. But not sure about it yet. 
+- Fast duplicate file detection with staged reads.
+- Modern keyboard and mouse friendly TUI built with Textual.
+- Theme support, with Catppuccin Mocha as the default.
+- Smooth terminal rendering with throttled progress updates.
+- Safe delete previews before removing duplicate files.
+- Copy full file paths for use in another terminal tab or editor.
+- SHA-256 proof for files that are truly identical.
+- Works well for disk cleanup on macOS, Linux, servers, project folders, media folders, and backups.
 
 ------
 
-### Installation
+### Install
 
-**Homebrew** (Recommended so you can get easy updates)
+**Homebrew is recommended** because it fetches the official build from the Dupster tap.
 
 ```bash
 brew tap karimz1/dupster
 brew install karimz1/dupster/dupster-cli
 ```
 
-**From Source**
+**From source**
 
 ```bash
 git clone https://github.com/karimz1/dupster.git
@@ -60,49 +65,100 @@ cd dupster
 pip install .
 ```
 
-------
-
-### How to use it
-
-Just point it at a directory:
+### Usage
 
 ```bash
 dupster ~/Downloads
+dupster ~/Pictures --verify
+dupster /mnt/backup --workers 1
+dupster ~/src --min-size 1048576
+dupster ~/src --follow-symlinks
 ```
 
-**Controls:**
+Useful controls:
 
-You will see all controls and shortcut in the UI when you start dupster but here is a little list:
+- `s`: scan again.
+- `?`: show or hide the right-side help and keys panel.
+- `h` / `l` or left / right arrows: move between duplicate groups and files.
+- `g`: jump to the top of the active list.
+- `G`: jump to the bottom of the active list.
+- `ctrl+p`: search commands.
+- `t`: change theme.
+- `v`: toggle between the default compact rows and detailed rows for duplicate groups and files.
+- `o`: open selected file.
+- `c`: copy selected file's full path.
+- `i`: choose one file to keep, then preview deleting duplicates in the selected group.
+- `d`: preview deleting duplicates across all groups, keeping one file per group.
+- `q`: quit.
 
-- `s`: Start the scan.
-- `h` / `l`: Move between the list and the file details.
-- `o`: Open the file (to double-check it's the one you want).
-- `i`: **Keep only this** (Deletes all other duplicates in that group).
-- `d`: **Delete all** (Removes the whole group).
-- `q`: Quit.
-
-------
-
-### How it compares
-
-If you actually need raw speed for massive amounts of data, I highly recommend these instead:
-
-**Disclamer** Not affiliated at all. I just use their tools and honestly, they’re incredible.
-
-- [fclones](https://github.com/pkolaczk/fclones) - Incredible speed, written in Rust.
-- [fdupes](https://github.com/adrianlopezroche/fdupes) - The standard tool most people use.
-- [rdfind](https://github.com/pauldreik/rdfind) - Great for replacing dupes with links.
-
-**Dupster** is just for when you want to "see" what's happening in a terminal ui and don't want to memorize all CLI flags, I must admit I'm kinda this person.
+The footer stays compact by default with the most useful controls. Press `?` to open the right-side help and keys panel. The footer also shows the version and a clickable `karimz1/dupster` GitHub button when there is enough terminal space.
 
 ------
 
-### Contributing
+### Themes
 
-If you're a developer and want to help me make this faster, I'd love the help. It’s mostly a learning / side-project for me, so if you want to fork it and open a PR with performance improvements (like file-size filtering or multi-threading), I'd be happy to add you as a co-author.
+Dupster supports Textual themes and starts with Catppuccin Mocha. Press `t` to open the theme picker. Moving through the list previews each theme across the full TUI after a short pause, so browsing stays smooth. Press Enter to keep the theme, or Escape to restore the previous one.
 
-- **Tests:** Run `pytest -v`.
-- **Dummy Data:** I included a script at `tools/generate_dupes.py` that creates a folder of fake duplicates so you can test things without breaking your real files.
+Your selected theme is saved in `~/.config/dupster/config.json`.
+
+------
+
+### Performance Since 0.0.8
+
+Version `0.0.8` made Dupster much faster by avoiding full reads for files that cannot be duplicates. The staged scanner checks size, inode, partial hashes, and only then full SHA-256. Benchmarks verify that the new scanner returns the same duplicate groups as the old full-read approach.
+
+| Corpus | Files | Before `0.0.8` | Since `0.0.8` | Speedup | Bytes read |
+|--------|-------|----------------|---------------|---------|------------|
+| `~/Downloads`, mostly large installers and media | 167 | 5.59 s | **0.07 s** | **79.9x** | 8.3 GB to 13.9 MB |
+| Generated mixed tree | 8,003 | 6.06 s | **0.67 s** | **9.1x** | 4.5 GB to 647.3 MB |
+| pnpm project tree, worst case | 81,377 | 15.14 s | **5.64 s** | **2.7x** | 1.8 GB to 986 MB |
+
+On the generated benchmark, Dupster reads 7.2x less file data and a warm in-session rescan takes 0.30 s.
+
+You can test the performance claim locally:
+
+```bash
+uv run tools/benchmark.py --generate temp/bench --files 8000
+```
+
+------
+
+### How It Works
+
+Dupster is a Python duplicate finder that reduces disk I/O before doing expensive proof work:
+
+1. Group files by size.
+2. Collapse hardlinked files by inode.
+3. Hash the first 4 KB.
+4. Hash the middle and last 4 KB.
+5. Full SHA-256 only for files that still match.
+6. Optional byte-for-byte verification with `--verify`.
+
+SSD and NVMe drives get concurrent reads. Spinning disks get a single ordered reader to reduce seek overhead. You can override this with `--workers` or `DUPSTER_DEVICE_TYPE=hdd`.
+
+------
+
+### Notes
+
+- Symlinks are skipped by default. Use `--follow-symlinks` if you need them.
+- Hardlinked files can appear as duplicate groups, but deleting them does not free extra disk space.
+- Hashes are cached for the current session only.
+- Dupster cannot force GPU acceleration from Python. For the smoothest feel, use a GPU-accelerated terminal emulator. Dupster keeps the UI responsive by avoiding unnecessary redraws.
+- For huge non-interactive batch jobs, also compare tools like [fclones](https://github.com/pkolaczk/fclones), [fdupes](https://github.com/adrianlopezroche/fdupes), and [rdfind](https://github.com/pauldreik/rdfind).
+
+------
+
+### Development
+
+```bash
+pytest -v
+python tools/benchmark.py ~/Downloads
+uv run tools/benchmark.py --generate temp/bench --files 8000
+```
+
+The scanner tests compare the staged pipeline against a brute-force reference over generated adversarial trees.
+
+Thanks to everyone trying, packaging, starring, and sharing Dupster.
 
 **Author:** [Karim Zouine](https://github.com/karimz1)
 
