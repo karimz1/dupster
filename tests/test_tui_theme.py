@@ -398,11 +398,11 @@ def test_bottom_bar_uses_responsive_shortcuts():
     compact_keys = app._key_bar_text(width=90).plain
     medium_keys = app._key_bar_text(width=120).plain
 
-    assert tiny_keys == "? Help  q Quit"
+    assert tiny_keys == "q Quit  ? Help"
     assert len(tiny_keys) <= 54
-    assert compact_keys == "? Help  ctrl+p Search  q Quit"
+    assert compact_keys == "q Quit  ? Help  ctrl+p Search"
     assert len(compact_keys) <= 90
-    assert medium_keys == "? Help  c Path  ctrl+p Search  i/d Delete  q Quit"
+    assert medium_keys == "q Quit  ? Help  c Path  ctrl+p Search  i/d Delete"
     assert len(medium_keys) <= 120
     assert app._version_bar_text(width=54).plain == ""
     assert app._github_bar_text(width=54).plain == ""
@@ -497,18 +497,18 @@ def test_maximized_keybar_preserves_shortcuts():
     app._pane_maximized = "left"
     key_text = app._key_bar_text(width=220).plain
 
-    assert "ESC Exit Maximize" in key_text
+    assert "f Split View" in key_text
+    assert "q Quit" in key_text
     assert "Copy Path" in key_text
     assert "Search" in key_text
     assert "Delete" in key_text
     assert "Jump" in key_text
-    assert "Quit" in key_text
 
 
 def test_toggle_maximize_pane_expands_vertically_and_restores(tmp_path):
     async def drive():
         app = DupsterApp(folder=str(tmp_path))
-        async with app.run_test(headless=True):
+        async with app.run_test(headless=True) as pilot:
             dashboard = app.query_one("#dashboard")
             left = app.query_one("#left")
             right = app.query_one("#right")
@@ -532,6 +532,13 @@ def test_toggle_maximize_pane_expands_vertically_and_restores(tmp_path):
             assert "full-hide" not in pathinfo.classes
             assert "pane-solo" not in left.classes
             assert "pane-hidden" not in right.classes
+            assert app._pane_maximized is None
+
+            # Verify q key in maximize mode exits maximize mode instead of quitting
+            app.action_toggle_maximize_pane()
+            assert app._pane_maximized is not None
+            await pilot.press("q")
+            await pilot_mod.wait_for_idle()
             assert app._pane_maximized is None
 
     asyncio.run(drive())

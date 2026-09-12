@@ -179,7 +179,7 @@ def test_tui_bottom_bar_stays_readable_in_small_terminals(tmp_path):
             githubbar = app.query_one("#githubbar", widgets.Static)
             key_text = keybar.renderable.plain
 
-            assert key_text == "? Help  q Quit"
+            assert key_text == "q Quit  ? Help"
             assert len(key_text) <= 54
             assert versionbar.has_class("footer-collapsed")
             assert githubbar.has_class("footer-collapsed")
@@ -194,7 +194,8 @@ def test_tui_shortcut_helper_can_be_shown_and_hidden(tmp_path):
             await pilot_mod.wait_for_idle()
             keybar = app.query_one("#keybar", widgets.Static)
 
-            assert keybar.renderable.plain.startswith("? Help")
+            assert keybar.renderable.plain.startswith("q Quit")
+            assert "? Help" in keybar.renderable.plain
             await pilot.press("?")
             await pilot_mod.wait_for_idle()
 
@@ -208,14 +209,14 @@ def test_tui_shortcut_helper_can_be_shown_and_hidden(tmp_path):
             assert "Move" in body_text
             assert "Act" in body_text
             assert "App" in body_text
-            assert keybar.renderable.plain.startswith("? Hide Help")
+            assert "? Hide Help" in keybar.renderable.plain
 
             await pilot.press("?")
             await pilot_mod.wait_for_idle()
 
             assert not app._shortcut_help_open
             assert not list(app.query("#shortcut-help"))
-            assert keybar.renderable.plain.startswith("? Help")
+            assert "? Help" in keybar.renderable.plain
 
     asyncio.run(_run())
 

@@ -1044,8 +1044,8 @@ class DupsterApp(App):
     """
 
     BINDINGS = [
-        Binding("ctrl+p", "command_palette", "Search", key_display="ctrl+p"),
         Binding("q", "quit", "Quit"),
+        Binding("ctrl+p", "command_palette", "Search", key_display="ctrl+p"),
         Binding("ctrl+c", "quit", "Force Quit"),
         Binding("s", "scan", "Scan"),
         Binding("o", "open_selected", "Open"),
@@ -1262,56 +1262,57 @@ class DupsterApp(App):
         if self._pane_maximized is not None:
             if mode == "tiny":
                 segments = [
-                    ("ESC", "Exit Max"),
                     ("q", "Quit"),
+                    ("f", "Split View"),
                 ]
             elif mode == "compact":
                 segments = [
-                    ("ESC", "Exit Max"),
-                    ("ctrl+p", "Search"),
                     ("q", "Quit"),
+                    ("f", "Split View"),
+                    ("ctrl+p", "Search"),
                 ]
             elif mode == "medium":
                 segments = [
-                    ("ESC", "Exit Max"),
+                    ("q", "Quit"),
+                    ("f", "Split View"),
                     ("c", "Path"),
                     ("ctrl+p", "Search"),
                     ("i/d", "Delete"),
-                    ("q", "Quit"),
                 ]
             else:
                 segments = [
-                    ("ESC", "Exit Maximize"),
+                    ("q", "Quit"),
                     ("?", help_label),
                     ("c", "Copy Path"),
                     ("ctrl+p", "Search"),
                     ("i/d", "Delete"),
+                    ("f", "Split View"),
                     ("g/G", "Jump"),
-                    ("q", "Quit"),
                 ]
             return self._shortcut_text(segments)
 
         if mode == "tiny":
             segments = [
-                ("?", help_label),
                 ("q", "Quit"),
+                ("?", help_label),
             ]
         elif mode == "compact":
             segments = [
+                ("q", "Quit"),
                 ("?", help_label),
                 ("ctrl+p", "Search"),
-                ("q", "Quit"),
             ]
         elif mode == "medium":
             segments = [
+                ("q", "Quit"),
                 ("?", help_label),
                 ("c", "Path"),
                 ("ctrl+p", "Search"),
                 ("i/d", "Delete"),
-                ("q", "Quit"),
             ]
         else:
             segments = [
+                ("q", "Quit"),
                 ("?", help_label),
                 ("c", "Copy Path"),
                 ("ctrl+p", "Search"),
@@ -1319,7 +1320,6 @@ class DupsterApp(App):
                 ("f", "Maximize"),
                 ("g/G", "Jump"),
                 ("h/l/arrows", "Pane"),
-                ("q", "Quit"),
             ]
         return self._shortcut_text(segments)
 
@@ -1902,6 +1902,13 @@ class DupsterApp(App):
     def action_maximize_widget(self) -> None:
         """Alias for built-in maximize_widget action to use custom pane toggle."""
         self.action_toggle_maximize_pane()
+
+    def action_quit(self) -> None:
+        """Quit the application, or exit maximize mode if currently maximized."""
+        if self._pane_maximized is not None:
+            self._restore_split_layout()
+            return
+        self.exit()
 
     def action_exit_maximize(self) -> None:
         """Exit maximize mode if active; otherwise this binding is a no-op."""
