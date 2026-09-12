@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dupster-cli"
-version = "0.0.7"
+version = "0.0.8"
 description = "Modern CLI to find and clean up duplicate files with an interactive TUI"
 readme = "README.md"
 license = {text = "Apache-2.0"}
@@ -29,6 +29,8 @@ classifiers = [
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: System :: Filesystems",
     "Topic :: Utilities",
 ]
@@ -65,7 +67,7 @@ include = ["dupster*"]
 
 [tool.black]
 line-length = 100
-target-version = ["py39", "py310", "py311", "py312"]
+target-version = ["py39", "py310", "py311"]
 include = '\.pyi?$'
 extend-exclude = '''
 /(

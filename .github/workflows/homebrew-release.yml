@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - "v*.*.*"
+      - "v*.*.*-*"
 
 jobs:
   test:
@@ -22,11 +23,11 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest pytest-asyncio
+          python -m pip install uv
+          uv sync --extra dev --python 3.11
 
       - name: Run test suite
-        run: pytest -v
+        run: uv run pytest -v
 
   create-github-release:
     name: Create GitHub Release
@@ -42,54 +43,79 @@ jobs:
         id: get_version
         run: |
           VERSION=${GITHUB_REF#refs/tags/v}
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-          echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-
-      - name: Extract changelog for this version
-        id: changelog
-        run: |
-          # Extract changelog section for this version
-          VERSION=${{ steps.get_version.outputs.version }}
-          if [ -f CHANGELOG.md ]; then
-            # Try to extract the section between [VERSION] and next version
-            CHANGES=$(sed -n "/## \[${VERSION}\]/,/## \[/p" CHANGELOG.md | sed '1d;$d')
-            if [ -z "$CHANGES" ]; then
-              CHANGES="See [CHANGELOG.md](CHANGELOG.md) for details."
-            fi
+          TAG=${GITHUB_REF#refs/tags/}
+          if [[ "$TAG" == *"-"* ]]; then
+            PRERELEASE=true
           else
-            CHANGES="Release version ${VERSION}"
+            PRERELEASE=false
           fi
-          echo "changes<<EOF" >> $GITHUB_OUTPUT
-          echo "$CHANGES" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          echo "prerelease=$PRERELEASE" >> $GITHUB_OUTPUT
+
+      - name: Prepare release notes
+        id: release_notes
+        run: |
+          TAG=${{ steps.get_version.outputs.tag }}
+          VERSION=${{ steps.get_version.outputs.version }}
+          NOTES_FILE=".github/releases/${TAG}.md"
+          OUTPUT_FILE="release-notes.md"
+
+          if [ -f "$NOTES_FILE" ]; then
+            cp "$NOTES_FILE" "$OUTPUT_FILE"
+          else
+            {
+              echo "## Dupster ${TAG}"
+              echo ""
+              if [ -f CHANGELOG.md ]; then
+                CHANGES=$(sed -n "/## \[${VERSION}\]/,/## \[/p" CHANGELOG.md | sed '1d;$d')
+                if [ -n "$CHANGES" ]; then
+                  echo "$CHANGES"
+                else
+                  echo "See [CHANGELOG.md](CHANGELOG.md) for details."
+                fi
+              else
+                echo "Release version ${VERSION}"
+              fi
+              echo ""
+              echo "### Installation"
+              echo ""
+              echo "Homebrew is recommended because it fetches the official build from the Dupster tap."
+              echo ""
+              echo '```bash'
+              echo "brew tap karimz1/dupster"
+              echo "brew install karimz1/dupster/dupster-cli"
+              echo '```'
+              echo ""
+              echo "From source:"
+              echo ""
+              echo '```bash'
+              echo "pip install git+https://github.com/karimz1/dupster.git@${TAG}"
+              echo '```'
+            } > "$OUTPUT_FILE"
+          fi
+
+          if [ ! -s "$OUTPUT_FILE" ]; then
+            {
+              echo "## Dupster ${TAG}"
+              echo ""
+              echo "See [CHANGELOG.md](CHANGELOG.md) for details."
+            } > "$OUTPUT_FILE"
+            fi
+          echo "path=$OUTPUT_FILE" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
           name: "Release ${{ steps.get_version.outputs.tag }}"
-          body: |
-            ## Dupster ${{ steps.get_version.outputs.tag }}
-            
-            ${{ steps.changelog.outputs.changes }}
-            
-            ### Installation
-            
-            **Homebrew:**
-            ```bash
-            brew tap karimz1/dupster
-            brew install karimz1/dupster/dupster-cli
-            ```
-            
-            **pip:**
-            ```bash
-            pip install git+https://github.com/karimz1/dupster.git@${{ steps.get_version.outputs.tag }}
-            ```
+          body_path: ${{ steps.release_notes.outputs.path }}
           draft: false
-          prerelease: false
+          prerelease: ${{ steps.get_version.outputs.prerelease }}
 
   homebrew-formula:
     name: Update Homebrew Formula
     needs: [test, create-github-release]
+    if: ${{ !contains(github.ref_name, '-') }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -122,8 +148,8 @@ jobs:
       - name: Install homebrew-pypi-poet and dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install homebrew-pypi-poet
-          pip install -r requirements.txt
+          python -m pip install uv
+          uv pip install --system homebrew-pypi-poet .
 
       - name: Generate Python resource blocks
         id: poet

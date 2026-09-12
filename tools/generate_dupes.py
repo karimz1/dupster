@@ -70,11 +70,11 @@ def main(
     # Unique files
     for i in range(unique):
         data = _content_for_group(1000 + i, size_kb // 2 if size_kb > 1 else 1)
-        _write(root / "unique" / f"unique{i+1}.bin", data)
+        _write(root / "unique" / f"unique{i + 1}.bin", data)
 
     # Same filename, different content
     for i in range(same_name_pairs):
-        base = f"same_name_{i+1}.txt"
+        base = f"same_name_{i + 1}.txt"
         _write(root / "same-name-1" / base, _content_for_group(2000 + i, 1))
         _write(root / "same-name-2" / base, _content_for_group(3000 + i, 1))
 
