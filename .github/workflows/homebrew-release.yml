@@ -23,11 +23,11 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest pytest-asyncio
+          python -m pip install uv
+          uv sync --extra dev --python 3.11
 
       - name: Run test suite
-        run: pytest -v
+        run: uv run pytest -v
 
   create-github-release:
     name: Create GitHub Release
@@ -148,8 +148,8 @@ jobs:
       - name: Install homebrew-pypi-poet and dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install homebrew-pypi-poet
-          pip install -r requirements.txt
+          python -m pip install uv
+          uv pip install --system homebrew-pypi-poet .
 
       - name: Generate Python resource blocks
         id: poet

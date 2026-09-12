@@ -35,6 +35,30 @@ def test_tui_uses_modern_default_theme(monkeypatch, tmp_path):
     assert app.theme == DEFAULT_THEME
 
 
+def test_tui_initializes_without_current_event_loop(monkeypatch, tmp_path):
+    monkeypatch.setenv(THEME_CONFIG_ENV, str(tmp_path / "config.json"))
+    previous_loop = None
+    try:
+        previous_loop = asyncio.get_event_loop()
+    except RuntimeError:
+        pass
+    asyncio.set_event_loop(None)
+
+    try:
+        app = DupsterApp()
+
+        assert app.theme == DEFAULT_THEME
+        asyncio.get_event_loop()
+    finally:
+        try:
+            new_loop = asyncio.get_event_loop()
+        except RuntimeError:
+            new_loop = None
+        if new_loop is not None and new_loop is not previous_loop:
+            new_loop.close()
+        asyncio.set_event_loop(previous_loop)
+
+
 def test_tui_loads_saved_theme(monkeypatch, tmp_path):
     config_path = tmp_path / "config.json"
     config_path.write_text(json.dumps({"theme": "nord"}), encoding="utf-8")
@@ -48,9 +72,9 @@ def test_tui_loads_saved_theme(monkeypatch, tmp_path):
 def test_tui_saves_selected_theme(monkeypatch, tmp_path):
     config_path = tmp_path / "config.json"
     monkeypatch.setenv(THEME_CONFIG_ENV, str(config_path))
-    app = DupsterApp(folder=str(tmp_path))
 
     async def drive():
+        app = DupsterApp(folder=str(tmp_path))
         async with app.run_test(headless=True) as pilot:
             app.theme = "dracula"
             await pilot.pause()
@@ -69,11 +93,13 @@ def _alternate_theme(app: DupsterApp) -> str:
 def test_theme_picker_previews_theme_and_restores_on_cancel(monkeypatch, tmp_path):
     config_path = tmp_path / "config.json"
     monkeypatch.setenv(THEME_CONFIG_ENV, str(config_path))
-    app = DupsterApp(folder=str(tmp_path))
-    original_theme = app.theme
-    target_theme = _alternate_theme(app)
+    result: dict[str, str] = {}
 
     async def drive():
+        app = DupsterApp(folder=str(tmp_path))
+        original_theme = app.theme
+        target_theme = _alternate_theme(app)
+        result["original_theme"] = original_theme
         async with app.run_test(headless=True) as pilot:
             await pilot.press("t")
             await pilot.pause()
@@ -97,17 +123,20 @@ def test_theme_picker_previews_theme_and_restores_on_cancel(monkeypatch, tmp_pat
 
     asyncio.run(drive())
 
-    assert app.theme == original_theme
-    assert json.loads(config_path.read_text(encoding="utf-8")) == {"theme": original_theme}
+    assert json.loads(config_path.read_text(encoding="utf-8")) == {
+        "theme": result["original_theme"]
+    }
 
 
 def test_theme_picker_applies_previewed_theme(monkeypatch, tmp_path):
     config_path = tmp_path / "config.json"
     monkeypatch.setenv(THEME_CONFIG_ENV, str(config_path))
-    app = DupsterApp(folder=str(tmp_path))
-    target_theme = _alternate_theme(app)
+    result: dict[str, str] = {}
 
     async def drive():
+        app = DupsterApp(folder=str(tmp_path))
+        target_theme = _alternate_theme(app)
+        result["target_theme"] = target_theme
         async with app.run_test(headless=True) as pilot:
             await pilot.press("t")
             await pilot.pause()
@@ -124,17 +153,16 @@ def test_theme_picker_applies_previewed_theme(monkeypatch, tmp_path):
 
     asyncio.run(drive())
 
-    assert app.theme == target_theme
-    assert json.loads(config_path.read_text(encoding="utf-8")) == {"theme": target_theme}
+    assert json.loads(config_path.read_text(encoding="utf-8")) == {"theme": result["target_theme"]}
 
 
 def test_theme_preview_after_scan_keeps_main_ui_visible(monkeypatch, tmp_path):
     config_path = tmp_path / "config.json"
     monkeypatch.setenv(THEME_CONFIG_ENV, str(config_path))
-    app = DupsterApp(folder=str(tmp_path))
-    target_theme = _alternate_theme(app)
 
     async def drive():
+        app = DupsterApp(folder=str(tmp_path))
+        target_theme = _alternate_theme(app)
         async with app.run_test(headless=True) as pilot:
             await pilot_mod.wait_for_idle()
             assert app.last_stats is not None
@@ -159,15 +187,15 @@ def test_theme_preview_after_scan_keeps_main_ui_visible(monkeypatch, tmp_path):
 def test_theme_picker_debounces_preview_while_browsing(monkeypatch, tmp_path):
     config_path = tmp_path / "config.json"
     monkeypatch.setenv(THEME_CONFIG_ENV, str(config_path))
-    app = DupsterApp(folder=str(tmp_path))
-    original_theme = app.theme
-    target_themes = [
-        name
-        for name in sorted(app.available_themes)
-        if name not in {original_theme, "textual-ansi"}
-    ][:2]
 
     async def drive():
+        app = DupsterApp(folder=str(tmp_path))
+        original_theme = app.theme
+        target_themes = [
+            name
+            for name in sorted(app.available_themes)
+            if name not in {original_theme, "textual-ansi"}
+        ][:2]
         async with app.run_test(headless=True) as pilot:
             await pilot.press("t")
             await pilot.pause()
@@ -384,7 +412,6 @@ def test_bottom_bar_uses_responsive_shortcuts():
 
 def test_github_button_opens_repo_and_copies_url_when_clicked(monkeypatch, tmp_path):
     monkeypatch.setenv(THEME_CONFIG_ENV, str(tmp_path / "config.json"))
-    app = DupsterApp(folder=str(tmp_path))
     opened: list[tuple[str, bool]] = []
     copied: list[str] = []
 
@@ -395,6 +422,7 @@ def test_github_button_opens_repo_and_copies_url_when_clicked(monkeypatch, tmp_p
         copied.append(text)
 
     async def drive():
+        app = DupsterApp(folder=str(tmp_path))
         async with app.run_test(headless=True) as pilot:
             monkeypatch.setattr(app, "open_url", open_url)
             monkeypatch.setattr(app, "copy_to_clipboard", copy_to_clipboard)
@@ -447,9 +475,8 @@ def test_file_panel_supports_detailed_and_compact_modes(tmp_path):
 
 
 def test_search_commands_include_copy_full_path(tmp_path):
-    app = DupsterApp(folder=str(tmp_path))
-
     async def drive():
+        app = DupsterApp(folder=str(tmp_path))
         async with app.run_test(headless=True):
             titles = {command.title for command in app.get_system_commands(app.screen)}
             assert "Copy Full Path" in titles

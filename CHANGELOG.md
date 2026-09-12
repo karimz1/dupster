@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Header and footer layout is tighter, calmer by default, and more responsive on small terminals
 - Delete actions now use clearer group versus all-groups wording
 - README is shorter, SEO friendly, and mentions the LinuxLinks feature
+- CI and local development now use `uv` with `pyproject.toml` and `uv.lock` instead of duplicate requirements files
 
 ### Fixed
 - Hardlinked files that were the only members of a size group are no longer missed
@@ -48,7 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Modern Python packaging with `pyproject.toml` and `setup.py`
 - `--version` flag to display current version
 - Professional README with badges, comparison table, and use cases
-- Separated development dependencies in `requirements-dev.txt`
+- Separated development dependency metadata for contributors
 - Code quality tools: Black and Ruff configurations
 - CHANGELOG for tracking releases
 - CONTRIBUTING guidelines for contributors

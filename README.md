@@ -1,13 +1,12 @@
-<img src="images/dupster-logo.svg" alt="Dupster logo" width="520"/>
+<div align="center">
 
 # Dupster
+
+<img src="images/dupster-logo.svg" alt="Dupster logo" width="500"/>
 
 **Dupster is a fast open source duplicate file finder with a modern terminal UI for macOS and Linux.**
 
 Use it to scan folders, review duplicate files, copy full file paths, open files, and safely preview cleanup from the command line.
-
-<div align="center">
-
 
 [![asciicast](https://asciinema.org/a/1265279.svg)](https://asciinema.org/a/1265279)
 
@@ -106,7 +105,7 @@ Your selected theme is saved in `~/.config/dupster/config.json`.
 Version `0.0.8` made Dupster much faster by avoiding full reads for files that cannot be duplicates. The staged scanner checks size, inode, partial hashes, and only then full SHA-256. Benchmarks verify that the new scanner returns the same duplicate groups as the old full-read approach.
 
 | Corpus | Files | Before `0.0.8` | Since `0.0.8` | Speedup | Bytes read |
-|--------|-------|----------------|---------------|---------|------------|
+| -------- | ------- | ---------------- | --------------- | --------- | ------------ |
 | `~/Downloads`, mostly large installers and media | 167 | 5.59 s | **0.07 s** | **79.9x** | 8.3 GB to 13.9 MB |
 | Generated mixed tree | 8,003 | 6.06 s | **0.67 s** | **9.1x** | 4.5 GB to 647.3 MB |
 | pnpm project tree, worst case | 81,377 | 15.14 s | **5.64 s** | **2.7x** | 1.8 GB to 986 MB |

@@ -19,9 +19,8 @@ def test_tui_reports_scan_stats(tmp_path):
     write(tmp_path / "two" / "b.bin", data)
     write(tmp_path / "three" / "unique.bin", b"solo")
 
-    app = DupsterApp(folder=str(tmp_path))
-
     async def drive():
+        app = DupsterApp(folder=str(tmp_path))
         async with app.run_test() as pilot:
             for _ in range(60):
                 await pilot.pause()

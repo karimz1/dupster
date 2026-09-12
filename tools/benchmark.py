@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Compare the staged scanner against the old hash-everything approach.
 
-    python tools/benchmark.py --generate temp/bench
-    python tools/benchmark.py ~/Downloads
+python tools/benchmark.py --generate temp/bench
+python tools/benchmark.py ~/Downloads
 """
 
 import argparse

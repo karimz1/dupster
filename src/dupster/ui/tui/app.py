@@ -52,6 +52,13 @@ PROGRESS_REDRAW_INTERVAL = 1 / 30
 THEME_PREVIEW_DELAY = 0.12
 
 
+def _ensure_current_event_loop() -> None:
+    try:
+        asyncio.get_event_loop()
+    except RuntimeError:
+        asyncio.set_event_loop(asyncio.new_event_loop())
+
+
 def _theme_config_path() -> Path:
     override = os.environ.get(THEME_CONFIG_ENV)
     if override:
@@ -1035,6 +1042,7 @@ class DupsterApp(App):
         verify: bool = False,
         follow_symlinks: bool = False,
     ) -> None:
+        _ensure_current_event_loop()
         super().__init__()
         self.folder = folder or os.path.expanduser("~")
         self._theme_config_path = _theme_config_path()
