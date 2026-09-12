@@ -18,7 +18,15 @@ Use it to scan folders, review duplicate files, copy full file paths, open files
 [![Featured on LinuxLinks](https://img.shields.io/badge/Featured%20on-LinuxLinks-2EA44F.svg)](https://www.linuxlinks.com/dupster-duplicate-file-finder/)
 [![Sponsor](https://img.shields.io/badge/Sponsor-GitHub-pink.svg)](https://github.com/sponsors/karimz1)
 
-Featured on [LinuxLinks](https://www.linuxlinks.com/dupster-duplicate-file-finder/).
+<p>
+  <a href="https://buymeacoffee.com/karimz1">
+    <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" height="41" />
+  </a>
+</p>
+
+Dupster got Featured on [LinuxLinks](https://www.linuxlinks.com/dupster-duplicate-file-finder/).
+
+
 
 </div>
 
