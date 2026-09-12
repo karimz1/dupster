@@ -5,6 +5,7 @@ hashing them (SHA-256 is hardware accelerated on any current CPU and runs at
 gigabytes per second). So the pipeline is built to read as little as possible,
 in the order the hardware likes best:
 
+  stage 0  skip zero-byte files ........... 0 bytes read  (safety gate)
   stage 1  group by size .................. 0 bytes read
   stage 2  collapse hardlinked inodes ..... 0 bytes read
   stage 3  probe the first 4 KiB .......... 4 KiB per file
@@ -14,6 +15,15 @@ in the order the hardware likes best:
 
 A file is only ever fully read once it has survived every cheap test, and a
 file whose size is unique in the tree is never opened at all.
+
+Symlinks are skipped unconditionally (follow_symlinks=False by default) because
+a symlink is not a second copy of the data — deleting the link frees no space
+and may sever an application or OS dependency.
+
+Zero-byte files are also unconditionally excluded. All empty files share the
+same hash, but they are never candidates for deletion: deleting any of them
+reclaims 0 bytes and risks breaking OS or application placeholder files (e.g.
+``~/Downloads/.localized``, ``~/Downloads/sessions``).
 """
 
 import asyncio
@@ -36,6 +46,7 @@ from dupster.infrastructure.hashing import (
     compute_zip_content_hash,
     zip_content_size,
 )
+from dupster.infrastructure.safety import is_os_protected
 
 ProgressCb = Optional[Callable[[int, int], None]]
 
@@ -53,6 +64,7 @@ class ScanStats:
     files_seen: int = 0
     skipped_by_size: int = 0
     skipped_by_probe: int = 0
+    skipped_os_protected: int = 0
     hardlinks_collapsed: int = 0
     fully_hashed: int = 0
     cache_hits: int = 0
@@ -217,6 +229,26 @@ async def find_duplicates_detailed_async(
     # that size, not by its size on disk. The central directory has it already.
     candidates = []
     for e in entries:
+        # Stage 0 – hard safety gates.  These are unconditional and run before
+        # any I/O so they cost nothing.
+        #
+        # 1. OS-protected paths: files inside system directories (/System,
+        #    /usr, C:\Windows, …) are never deletion candidates — the OS or a
+        #    package manager owns their lifecycle and SIP/ACLs protect them.
+        if is_os_protected(e.path):
+            progress.resolve()
+            stats.skipped_os_protected += 1
+            continue
+        #
+        # 2. Zero-byte files: all empty files share the same SHA-256, but
+        #    deleting any of them reclaims 0 bytes and may silently break the
+        #    OS or an app that relies on placeholder files (e.g. macOS
+        #    ~/Downloads/.localized, ~/Downloads/sessions).  Symlinks are
+        #    already excluded by iter_entries (follow_symlinks=False).
+        if e.size == 0 and not e.is_zip:
+            progress.resolve()
+            stats.skipped_by_size += 1
+            continue
         if e.size < min_size and not e.is_zip:
             progress.resolve()
             stats.skipped_by_size += 1

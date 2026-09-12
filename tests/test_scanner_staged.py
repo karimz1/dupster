@@ -20,6 +20,7 @@ from dupster.application.scanner import (
 )
 from dupster.infrastructure.filesystem import iter_entries
 from dupster.infrastructure.hashing import compute_file_hash, compute_zip_content_hash
+from dupster.infrastructure.safety import is_os_protected
 
 
 @pytest.fixture(autouse=True)
@@ -30,9 +31,20 @@ def _clean_cache():
 
 
 def brute_force(root: str) -> dict:
-    """The exhaustive reference: full hash of every file, no filtering."""
+    """The exhaustive reference: full hash of every file, no filtering.
+
+    Mirrors the same safety exclusions as the real scanner so that the
+    differential test stays valid even when the random tree contains
+    zero-byte files or files inside OS-protected paths.
+    """
     by_hash: dict = {}
     for entry in iter_entries(root):
+        # Skip zero-byte files — same rule as the real scanner.
+        if entry.size == 0:
+            continue
+        # Skip OS-protected paths — same rule as the real scanner.
+        if is_os_protected(entry.path):
+            continue
         if entry.path.lower().endswith(".zip"):
             digest = compute_zip_content_hash(entry.path)
         else:
@@ -104,12 +116,21 @@ def test_identical_large_files_are_found(tmp_path):
     }
 
 
-def test_empty_files_group_together(tmp_path):
+def test_zero_byte_files_are_never_reported_as_duplicates(tmp_path):
+    """Zero-byte files must be unconditionally excluded from results.
+
+    All empty files share the same SHA-256, but reporting them as duplicates is
+    dangerous: deleting any of them reclaims exactly 0 bytes and may silently
+    break OS or application behaviour.  macOS, for instance, drops zero-byte
+    placeholder files (e.g. ~/Downloads/.localized, ~/Downloads/sessions) that
+    apps and Finder depend on.  Deleting a placeholder is indistinguishable from
+    deleting one of several real empty files, so the safe choice is to never
+    surface them at all.
+    """
     write(tmp_path / "a.bin", b"")
     write(tmp_path / "b.bin", b"")
-    write(tmp_path / "c.bin", b"x")
-    groups = normalise(scan(str(tmp_path)))
-    assert groups == {(str(tmp_path / "a.bin"), str(tmp_path / "b.bin"))}
+    write(tmp_path / "c.bin", b"x")  # non-empty, must not appear either
+    assert scan(str(tmp_path)) == {}
 
 
 def test_files_below_probe_threshold_still_compared(tmp_path):
@@ -118,6 +139,61 @@ def test_files_below_probe_threshold_still_compared(tmp_path):
     write(tmp_path / "b.txt", b"hello")
     write(tmp_path / "c.txt", b"world")
     assert normalise(scan(str(tmp_path))) == {(str(tmp_path / "a.txt"), str(tmp_path / "b.txt"))}
+
+
+@pytest.mark.skipif(os.name == "nt", reason="symlinks need privileges on Windows")
+def test_macos_downloads_placeholder_pattern(tmp_path):
+    """Model the exact scenario from the bug report.
+
+    ~/Downloads commonly contains zero-byte placeholder files created by macOS
+    and web-browser sessions (.localized, account, data, sessions, sign-in, l).
+    They all share the same SHA-256 because they are all empty.  Dupster must
+    not report any of them as duplicates, and must not report a mix of empty
+    and non-empty files as a group either.
+    """
+    placeholders = [".localized", "account", "data", "l", "sessions", "sign-in"]
+    for name in placeholders:
+        write(tmp_path / name, b"")
+
+    # Also add a real duplicate pair to make sure those still surface.
+    real_data = b"real content" * 500
+    write(tmp_path / "doc_a.pdf", real_data)
+    write(tmp_path / "doc_b.pdf", real_data)
+
+    groups = normalise(scan(str(tmp_path)))
+
+    # Only the real duplicate pair must be reported - not a single placeholder.
+    assert groups == {(str(tmp_path / "doc_a.pdf"), str(tmp_path / "doc_b.pdf"))}
+
+
+@pytest.mark.skipif(os.name == "nt", reason="symlinks need privileges on Windows")
+def test_symlink_mixed_with_real_file_same_content(tmp_path):
+    """A symlink that points at a file with the same content must not create a
+    false duplicate group.
+
+    Without this guard a user could be prompted to delete the symlink target,
+    leaving the link dangling - or worse, prompted to delete the symlink while
+    believing it is a full independent copy that wastes space.
+    """
+    real_data = b"important payload" * 1000
+    real = write(tmp_path / "original.bin", real_data)
+    # Symlink resolves to the same bytes, but is NOT a copy.
+    os.symlink(real, tmp_path / "link.bin")
+    # Unrelated duplicate pair that must still be detected.
+    extra = b"other data" * 500
+    write(tmp_path / "extra_a.bin", extra)
+    write(tmp_path / "extra_b.bin", extra)
+
+    groups = normalise(scan(str(tmp_path)))
+    paths_in_groups = {p for g in groups for p in g}
+
+    # Symlink must never appear in any group.
+    assert str(tmp_path / "link.bin") not in paths_in_groups
+    # Real duplicate pair must be found.
+    assert (str(tmp_path / "extra_a.bin"), str(tmp_path / "extra_b.bin")) in groups
+    # original.bin has no duplicate (only its symlink shares the bytes, and
+    # symlinks are excluded), so it must not appear in any group either.
+    assert str(tmp_path / "original.bin") not in paths_in_groups
 
 
 @pytest.mark.skipif(os.name == "nt", reason="hardlinks need privileges on Windows")
@@ -251,7 +327,10 @@ def build_adversarial_tree(root, rnd: random.Random) -> None:
 
     # Genuine duplicates at several sizes.
     for g in range(rnd.randint(1, 4)):
-        size = rnd.choice([0, 1, 5000, 70000, 200000])
+        # size=0 is intentionally excluded: zero-byte files are skipped by
+        # the real scanner (safety gate) and by brute_force(), so they would
+        # always produce a false mismatch in the differential test.
+        size = rnd.choice([1, 5000, 70000, 200000])
         data = bytes(rnd.getrandbits(8) for _ in range(size))
         for c in range(rnd.randint(2, 4)):
             write(root / f"dup{g}" / f"c{c}.bin", data)
