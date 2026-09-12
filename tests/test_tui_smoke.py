@@ -171,8 +171,7 @@ def test_tui_shortcut_helper_can_be_shown_and_hidden(tmp_path):
             panel = app.query_one("#shortcut-help")
             title = app.query_one("#shortcut-title", widgets.Static)
             body_text = "".join(
-                section.renderable.plain
-                for section in panel.query(".shortcut-section").nodes
+                section.renderable.plain for section in panel.query(".shortcut-section").nodes
             )
             assert "Help and Keys" in title.renderable.plain
             assert "Move" in body_text

@@ -62,9 +62,7 @@ def test_tui_saves_selected_theme(monkeypatch, tmp_path):
 
 def _alternate_theme(app: DupsterApp) -> str:
     return next(
-        name
-        for name in sorted(app.available_themes)
-        if name not in {app.theme, "textual-ansi"}
+        name for name in sorted(app.available_themes) if name not in {app.theme, "textual-ansi"}
     )
 
 
@@ -82,9 +80,7 @@ def test_theme_picker_previews_theme_and_restores_on_cancel(monkeypatch, tmp_pat
             theme_list = app.screen.query_one("#theme-list", widgets.ListView)
             app.screen.query_one("#summary", widgets.Static)
             target_index = [
-                item.theme_name
-                for item in theme_list.children
-                if isinstance(item, ThemeListItem)
+                item.theme_name for item in theme_list.children if isinstance(item, ThemeListItem)
             ].index(target_theme)
 
             theme_list.index = target_index
@@ -102,9 +98,7 @@ def test_theme_picker_previews_theme_and_restores_on_cancel(monkeypatch, tmp_pat
     asyncio.run(drive())
 
     assert app.theme == original_theme
-    assert json.loads(config_path.read_text(encoding="utf-8")) == {
-        "theme": original_theme
-    }
+    assert json.loads(config_path.read_text(encoding="utf-8")) == {"theme": original_theme}
 
 
 def test_theme_picker_applies_previewed_theme(monkeypatch, tmp_path):
@@ -120,9 +114,7 @@ def test_theme_picker_applies_previewed_theme(monkeypatch, tmp_path):
             theme_list = app.screen.query_one("#theme-list", widgets.ListView)
             app.screen.query_one("#summary", widgets.Static)
             target_index = [
-                item.theme_name
-                for item in theme_list.children
-                if isinstance(item, ThemeListItem)
+                item.theme_name for item in theme_list.children if isinstance(item, ThemeListItem)
             ].index(target_theme)
 
             theme_list.index = target_index
@@ -133,9 +125,7 @@ def test_theme_picker_applies_previewed_theme(monkeypatch, tmp_path):
     asyncio.run(drive())
 
     assert app.theme == target_theme
-    assert json.loads(config_path.read_text(encoding="utf-8")) == {
-        "theme": target_theme
-    }
+    assert json.loads(config_path.read_text(encoding="utf-8")) == {"theme": target_theme}
 
 
 def test_theme_preview_after_scan_keeps_main_ui_visible(monkeypatch, tmp_path):
@@ -153,9 +143,7 @@ def test_theme_preview_after_scan_keeps_main_ui_visible(monkeypatch, tmp_path):
             await pilot.pause()
             theme_list = app.screen.query_one("#theme-list", widgets.ListView)
             target_index = [
-                item.theme_name
-                for item in theme_list.children
-                if isinstance(item, ThemeListItem)
+                item.theme_name for item in theme_list.children if isinstance(item, ThemeListItem)
             ].index(target_theme)
 
             theme_list.index = target_index
@@ -271,9 +259,7 @@ def test_smooth_progress_throttles_redundant_redraws():
 
 def test_command_palette_binding_is_named_search():
     search_bindings = [
-        binding
-        for binding in DupsterApp.BINDINGS
-        if binding.action == "command_palette"
+        binding for binding in DupsterApp.BINDINGS if binding.action == "command_palette"
     ]
 
     assert len(search_bindings) == 1
@@ -282,9 +268,7 @@ def test_command_palette_binding_is_named_search():
 
 def test_copy_path_binding_is_available():
     copy_bindings = [
-        binding
-        for binding in DupsterApp.BINDINGS
-        if binding.action == "copy_selected_path"
+        binding for binding in DupsterApp.BINDINGS if binding.action == "copy_selected_path"
     ]
 
     assert len(copy_bindings) == 1

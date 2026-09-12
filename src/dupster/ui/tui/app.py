@@ -129,10 +129,7 @@ class _SmoothProgress:
         should_update = (
             self._last_percent is None
             or percent == 100
-            or (
-                percent != self._last_percent
-                and now - self._last_refresh >= self._min_interval
-            )
+            or (percent != self._last_percent and now - self._last_refresh >= self._min_interval)
         )
         if not should_update:
             return
@@ -291,10 +288,7 @@ class ThemePicker(Vertical):
             return 0
 
     def compose(self) -> ComposeResult:  # type: ignore[override]
-        items = [
-            ThemeListItem(theme_name, self.original_theme)
-            for theme_name in self.theme_names
-        ]
+        items = [ThemeListItem(theme_name, self.original_theme) for theme_name in self.theme_names]
         yield Static("Themes", id="theme-title")
         yield ListView(*items, id="theme-list", initial_index=self.current_index)
 
@@ -1349,9 +1343,7 @@ class DupsterApp(App):
             except Exception:
                 pass
             return
-        theme_names = sorted(
-            name for name in self.available_themes if name != "textual-ansi"
-        )
+        theme_names = sorted(name for name in self.available_themes if name != "textual-ansi")
         self.screen.mount(ThemePicker(self.theme, theme_names))
 
     def _refresh_theme_renderables(self, *, rebuild_lists: bool = True) -> None:

@@ -1,3 +1,5 @@
+<img src="images/dupster-logo.svg" alt="Dupster logo" width="520"/>
+
 # Dupster
 
 **Dupster is a fast open source duplicate file finder with a modern terminal UI for macOS and Linux.**
@@ -6,12 +8,8 @@ Use it to scan folders, review duplicate files, copy full file paths, open files
 
 <div align="center">
 
-<img src="images/dupster-logo.svg" alt="Dupster logo" width="520"/>
 
-<br/>
-<br/>
-
-<img src="images/live-demo.gif" alt="Dupster duplicate file finder terminal UI demo" width="800"/>
+[![asciicast](https://asciinema.org/a/1265279.svg)](https://asciinema.org/a/1265279)
 
 [![CI](https://github.com/karimz1/dupster/actions/workflows/ci.yml/badge.svg)](https://github.com/karimz1/dupster/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
