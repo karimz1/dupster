@@ -313,6 +313,6 @@ def test_scanner_real_os_paths_are_never_reported(tmp_path):
 
     # system_file must not appear in any group.
     all_paths = {p for paths in dupes.values() for p in paths}
-    assert system_file not in all_paths, (
-        f"System file {system_file!r} appeared in duplicate results"
-    )
+    assert (
+        system_file not in all_paths
+    ), f"System file {system_file!r} appeared in duplicate results"
