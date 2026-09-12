@@ -722,6 +722,35 @@ class DupsterApp(App):
         width: 1fr;
     }
 
+    /* Pane maximize: the pane that is hidden and the one that takes the full row. */
+    .pane-hidden, .full-hide {
+        display: none;
+    }
+
+    .pane-solo {
+        width: 1fr;
+        margin-right: 0;
+    }
+
+    .pane-maximized {
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 1fr !important;
+        background: $background !important;
+    }
+
+    /* Shown in the bottom bar when a pane is maximized so the user knows how to exit. */
+    #maximize-hint {
+        width: auto;
+        min-width: 0;
+        content-align: center middle;
+        padding: 0 2;
+        background: $warning 18%;
+        color: $warning;
+        text-style: bold;
+    }
+
     #grouplabel, #filelabel {
         height: 3;
         padding: 1 2;
@@ -1032,6 +1061,8 @@ class DupsterApp(App):
         Binding("left", "focus_left", "Left Pane"),
         Binding("right", "focus_right", "Right Pane"),
         Binding("t", "change_theme", "Theme"),
+        Binding("f", "toggle_maximize_pane", "Maximize"),
+        Binding("escape", "exit_maximize", "Exit Maximize", show=False),
     ]
 
     def __init__(
@@ -1059,6 +1090,7 @@ class DupsterApp(App):
         self._theme_previewing = False
         self._compact_groups = True
         self._shortcut_help_open = False
+        self._pane_maximized: str | None = None  # "left", "right", or None
 
     def _load_theme_name(self) -> str:
         try:
@@ -1226,6 +1258,39 @@ class DupsterApp(App):
     def _key_bar_text(self, width: int | None = None) -> Text:
         mode = self._footer_mode(width)
         help_label = "Hide Help" if self._shortcut_help_open else "Help"
+
+        if self._pane_maximized is not None:
+            if mode == "tiny":
+                segments = [
+                    ("ESC", "Exit Max"),
+                    ("q", "Quit"),
+                ]
+            elif mode == "compact":
+                segments = [
+                    ("ESC", "Exit Max"),
+                    ("ctrl+p", "Search"),
+                    ("q", "Quit"),
+                ]
+            elif mode == "medium":
+                segments = [
+                    ("ESC", "Exit Max"),
+                    ("c", "Path"),
+                    ("ctrl+p", "Search"),
+                    ("i/d", "Delete"),
+                    ("q", "Quit"),
+                ]
+            else:
+                segments = [
+                    ("ESC", "Exit Maximize"),
+                    ("?", help_label),
+                    ("c", "Copy Path"),
+                    ("ctrl+p", "Search"),
+                    ("i/d", "Delete"),
+                    ("g/G", "Jump"),
+                    ("q", "Quit"),
+                ]
+            return self._shortcut_text(segments)
+
         if mode == "tiny":
             segments = [
                 ("?", help_label),
@@ -1251,6 +1316,7 @@ class DupsterApp(App):
                 ("c", "Copy Path"),
                 ("ctrl+p", "Search"),
                 ("i/d", "Delete"),
+                ("f", "Maximize"),
                 ("g/G", "Jump"),
                 ("h/l/arrows", "Pane"),
                 ("q", "Quit"),
@@ -1411,7 +1477,9 @@ class DupsterApp(App):
             yield GithubButton(self._github_bar_text(), id="githubbar")
 
     def get_system_commands(self, screen):  # type: ignore[override]
-        yield from super().get_system_commands(screen)
+        for cmd in super().get_system_commands(screen):
+            if "maximize" not in cmd.title.lower():
+                yield cmd
         yield SystemCommand(
             "Copy Full Path",
             "Copy the selected duplicate file path",
@@ -1446,6 +1514,11 @@ class DupsterApp(App):
             "Jump to Bottom",
             "Move to the last row in the active list",
             self.action_jump_bottom,
+        )
+        yield SystemCommand(
+            "Maximize Focused Widget",
+            "Maximize the focused list widget edge-to-edge while preserving bottom navigation bar",
+            self.action_toggle_maximize_pane,
         )
         yield SystemCommand(
             "Star on GitHub",
@@ -1763,7 +1836,82 @@ class DupsterApp(App):
         self.notify(f"Deleted {deleted} duplicate file(s) across {len(event.plan)} group(s).")
         asyncio.create_task(self.action_scan())
 
+    def _restore_split_layout(self) -> None:
+        """Bring both panes and widgets back to their normal side-by-side layout."""
+        for selector in (
+            "#left",
+            "#right",
+            "#dashboard",
+            "#grouplabel",
+            "#pathinfo",
+            "#summary",
+            "#progress",
+            "#filelabel",
+        ):
+            try:
+                w = self.query_one(selector)
+                w.remove_class("pane-hidden", "pane-solo", "pane-maximized", "full-hide")
+            except Exception:
+                pass
+        self._pane_maximized = None
+        self._refresh_footer()
+
+    def action_toggle_maximize_pane(self) -> None:
+        """Maximize the focused list widget edge-to-edge horizontally and vertically while keeping #bottombar."""
+        if self._pane_maximized is not None:
+            # Already maximized — toggle off.
+            self._restore_split_layout()
+            return
+        try:
+            left = self.query_one("#left")
+            right = self.query_one("#right")
+        except Exception:
+            return
+
+        # Hide top dashboard to maximize vertical space
+        try:
+            self.query_one("#dashboard").add_class("full-hide")
+        except Exception:
+            pass
+
+        # Determine which pane is currently active (has the "active" CSS class).
+        focused_pane = "left" if "active" in left.classes else "right"
+        if focused_pane == "left":
+            left.add_class("pane-solo", "pane-maximized")
+            right.add_class("pane-hidden")
+            for selector in ("#grouplabel", "#pathinfo"):
+                try:
+                    self.query_one(selector).add_class("full-hide")
+                except Exception:
+                    pass
+        else:
+            right.add_class("pane-solo", "pane-maximized")
+            left.add_class("pane-hidden")
+            for selector in ("#summary", "#progress", "#filelabel"):
+                try:
+                    self.query_one(selector).add_class("full-hide")
+                except Exception:
+                    pass
+        self._pane_maximized = focused_pane
+        self._refresh_footer()
+
+    def action_toggle_maximize(self) -> None:
+        """Alias for built-in maximize action to use custom pane toggle."""
+        self.action_toggle_maximize_pane()
+
+    def action_maximize_widget(self) -> None:
+        """Alias for built-in maximize_widget action to use custom pane toggle."""
+        self.action_toggle_maximize_pane()
+
+    def action_exit_maximize(self) -> None:
+        """Exit maximize mode if active; otherwise this binding is a no-op."""
+        if self._pane_maximized is not None:
+            self._restore_split_layout()
+
     def action_focus_left(self) -> None:
+        # Restore split layout first so the user never gets stuck in maximize
+        if self._pane_maximized is not None:
+            self._restore_split_layout()
         try:
             groups_lv = self.query_one("#groups", ListView)
             left = self.query_one("#left")
@@ -1788,6 +1936,10 @@ class DupsterApp(App):
             pass
 
     def action_focus_right(self) -> None:
+        # Restore split layout first so the user never gets stuck in maximize
+        # when switching panes via l / right arrow.
+        if self._pane_maximized is not None:
+            self._restore_split_layout()
         try:
             files_lv = self.query_one("#files", ListView)
             left = self.query_one("#left")

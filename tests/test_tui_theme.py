@@ -486,6 +486,54 @@ def test_search_commands_include_copy_full_path(tmp_path):
             assert "Toggle Help Panel" in titles
             assert "Jump to Top" in titles
             assert "Jump to Bottom" in titles
+            assert "Maximize Focused Widget" in titles
             assert "Star on GitHub" in titles
 
     asyncio.run(drive())
+
+
+def test_maximized_keybar_preserves_shortcuts():
+    app = DupsterApp()
+    app._pane_maximized = "left"
+    key_text = app._key_bar_text(width=220).plain
+
+    assert "ESC Exit Maximize" in key_text
+    assert "Copy Path" in key_text
+    assert "Search" in key_text
+    assert "Delete" in key_text
+    assert "Jump" in key_text
+    assert "Quit" in key_text
+
+
+def test_toggle_maximize_pane_expands_vertically_and_restores(tmp_path):
+    async def drive():
+        app = DupsterApp(folder=str(tmp_path))
+        async with app.run_test(headless=True):
+            dashboard = app.query_one("#dashboard")
+            left = app.query_one("#left")
+            right = app.query_one("#right")
+            pathinfo = app.query_one("#pathinfo")
+
+            # Initially normal
+            assert "full-hide" not in dashboard.classes
+            assert "pane-solo" not in left.classes
+
+            # Toggle maximize on left pane
+            app.action_toggle_maximize_pane()
+            assert "full-hide" in dashboard.classes
+            assert "full-hide" in pathinfo.classes
+            assert "pane-solo" in left.classes
+            assert "pane-hidden" in right.classes
+            assert app._pane_maximized == "left"
+
+            # Toggle off via exit
+            app.action_exit_maximize()
+            assert "full-hide" not in dashboard.classes
+            assert "full-hide" not in pathinfo.classes
+            assert "pane-solo" not in left.classes
+            assert "pane-hidden" not in right.classes
+            assert app._pane_maximized is None
+
+    asyncio.run(drive())
+
+

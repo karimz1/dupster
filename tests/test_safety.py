@@ -82,7 +82,7 @@ class TestMacOSProtected:
             "/Users/alice/Library/Application Support/MyApp/cache.db",
             "/Volumes/ExternalDrive/backup.tar",
             "/Applications/Firefox.app/Contents/MacOS/firefox",
-            "/opt/homebrew/bin/brew",   # Homebrew user-managed, not Apple
+            "/opt/homebrew/bin/brew",  # Homebrew user-managed, not Apple
             "/home/runner/work/project/file.py",  # CI runner
             # User temp dirs live under /private/var/folders — must NOT be blocked.
             "/private/var/folders/5w/abc123/T/pytest-123/file.bin",
@@ -126,8 +126,8 @@ class TestLinuxProtected:
         [
             "/home/alice/Documents/report.pdf",
             "/home/alice/.config/myapp/settings.json",
-            "/root/projects/myapp/main.py",   # root's home, not a system tree
-            "/opt/mycompany/app/binary",       # third-party opt, not /snap or /nix
+            "/root/projects/myapp/main.py",  # root's home, not a system tree
+            "/opt/mycompany/app/binary",  # third-party opt, not /snap or /nix
             "/mnt/backup/archive.tar.gz",
             "/srv/www/index.html",
             "/media/usb/photos/img001.jpg",
@@ -148,8 +148,8 @@ class TestWindowsProtected:
         [
             r"C:\Windows\System32\ntdll.dll",
             r"C:\Windows\SysWOW64\kernel32.dll",
-            r"c:\windows\system32\drivers\etc\hosts",   # lower-case drive
-            r"D:\Windows\explorer.exe",                  # different drive
+            r"c:\windows\system32\drivers\etc\hosts",  # lower-case drive
+            r"D:\Windows\explorer.exe",  # different drive
             r"C:\Program Files\Microsoft Office\WINWORD.EXE",
             r"C:\Program Files (x86)\Microsoft Visual C++\vc_redist.exe",
             r"C:\ProgramData\Microsoft\Windows Defender\Definition Updates",
@@ -183,24 +183,30 @@ class TestWindowsProtected:
 
 class TestIsOsProtectedDispatch:
     def test_macos_dispatch(self):
-        with patch("dupster.infrastructure.safety.sys") as mock_sys, \
-             patch("dupster.infrastructure.safety.os") as mock_os:
+        with (
+            patch("dupster.infrastructure.safety.sys") as mock_sys,
+            patch("dupster.infrastructure.safety.os") as mock_os,
+        ):
             mock_sys.platform = "darwin"
             mock_os.name = "posix"
             assert is_os_protected("/System/Library/something")
             assert not is_os_protected("/Users/alice/file.txt")
 
     def test_linux_dispatch(self):
-        with patch("dupster.infrastructure.safety.sys") as mock_sys, \
-             patch("dupster.infrastructure.safety.os") as mock_os:
+        with (
+            patch("dupster.infrastructure.safety.sys") as mock_sys,
+            patch("dupster.infrastructure.safety.os") as mock_os,
+        ):
             mock_sys.platform = "linux"
             mock_os.name = "posix"
             assert is_os_protected("/usr/bin/bash")
             assert not is_os_protected("/home/alice/file.txt")
 
     def test_windows_dispatch(self):
-        with patch("dupster.infrastructure.safety.sys") as mock_sys, \
-             patch("dupster.infrastructure.safety.os") as mock_os:
+        with (
+            patch("dupster.infrastructure.safety.sys") as mock_sys,
+            patch("dupster.infrastructure.safety.os") as mock_os,
+        ):
             mock_sys.platform = "win32"
             mock_os.name = "nt"
             assert is_os_protected(r"C:\Windows\System32\ntdll.dll")
@@ -239,17 +245,13 @@ def test_scanner_skips_os_protected_files(tmp_path, monkeypatch):
             return True
         return original_guard(path)
 
-    monkeypatch.setattr(
-        "dupster.application.scanner.is_os_protected", patched_guard
-    )
+    monkeypatch.setattr("dupster.application.scanner.is_os_protected", patched_guard)
 
     dupes, stats, _ = scan_detailed(str(tmp_path))
 
     # The system file must not appear in any group.
     all_paths = {p for paths in dupes.values() for p in paths}
-    assert str(sys_file) not in all_paths, (
-        "OS-protected file appeared in duplicate results"
-    )
+    assert str(sys_file) not in all_paths, "OS-protected file appeared in duplicate results"
 
     # The real user-space duplicate must still be detected.
     assert len(dupes) == 1, "Expected exactly one user-space duplicate group"
@@ -271,9 +273,7 @@ def test_scanner_os_protected_stat_is_separate_from_size_skip(tmp_path, monkeypa
     sys_file = write(tmp_path / "sys" / "c.bin", data)
 
     prefix = str(tmp_path / "sys") + os.sep
-    orig = __import__(
-        "dupster.infrastructure.safety", fromlist=["is_os_protected"]
-    ).is_os_protected
+    orig = __import__("dupster.infrastructure.safety", fromlist=["is_os_protected"]).is_os_protected
 
     monkeypatch.setattr(
         "dupster.application.scanner.is_os_protected",

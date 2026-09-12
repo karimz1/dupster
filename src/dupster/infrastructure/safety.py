@@ -71,7 +71,7 @@ _LINUX_PROTECTED: tuple[str, ...] = (
     "/dev/",
     "/run/",
     "/snap/",
-    "/nix/",       # NixOS / nix store
+    "/nix/",  # NixOS / nix store
     "/opt/homebrew/",  # Homebrew on Apple Silicon (used on Linux too sometimes)
 )
 
@@ -80,7 +80,7 @@ _LINUX_PROTECTED: tuple[str, ...] = (
 # Files, because third-party apps installed there should remain scannable.
 _WINDOWS_PROTECTED_LOWER: tuple[str, ...] = (
     "\\windows\\",
-    "\\program files\\microsoft ",       # Microsoft apps under Program Files
+    "\\program files\\microsoft ",  # Microsoft apps under Program Files
     "\\program files (x86)\\microsoft ",  # 32-bit Microsoft apps
     "\\programdata\\microsoft\\",
     "\\system volume information\\",
