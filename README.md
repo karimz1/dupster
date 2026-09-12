@@ -6,7 +6,7 @@
 
 **Dupster is a fast open source duplicate file finder with a modern terminal UI for macOS and Linux.**
 
-Use it to scan folders, review duplicate files, copy full file paths, open files, and safely preview cleanup from the command line. Made from a lazy terminal guy, that got sick of remebereing all commands.
+Use it to scan folders, review duplicate files, copy full file paths, open files, and safely preview cleanup from the command line. Made from a lazy terminal guy, that got sick of remembering all commands.
 
 [![asciicast](https://asciinema.org/a/1265279.svg)](https://asciinema.org/a/1265279)
 
