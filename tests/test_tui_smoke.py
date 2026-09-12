@@ -8,6 +8,7 @@ widgets = pytest.importorskip("textual.widgets")
 pilot_mod = pytest.importorskip("textual.pilot")
 coordinate_mod = pytest.importorskip("textual.coordinate")
 
+from dupster.ui.tui import app as tui_app
 from dupster.ui.tui.app import DupsterApp
 
 
@@ -103,6 +104,36 @@ def test_tui_copies_selected_file_path(dupe_dataset):
             await pilot_mod.wait_for_idle()
 
             assert copied == [str(Path(selected).resolve())]
+
+    asyncio.run(_run())
+
+
+def test_tui_open_selected_file_falls_back_to_copy_path(monkeypatch, dupe_dataset):
+    async def _run():
+        app = DupsterApp(folder=dupe_dataset["root"])
+        opened: list[str] = []
+        copied: list[str] = []
+
+        def open_file(path: str) -> bool:
+            opened.append(path)
+            raise ModuleNotFoundError("textual.scrollbar")
+
+        async with app.run_test(headless=True) as pilot:
+            monkeypatch.setattr(tui_app, "open_file", open_file)
+            app.copy_to_clipboard = copied.append  # type: ignore[method-assign]
+            await pilot_mod.wait_for_idle()
+            assert app.groups
+            await pilot.press("l")
+            await pilot_mod.wait_for_idle()
+
+            selected = app._selected_file()
+            assert selected is not None
+            await pilot.press("o")
+            await pilot_mod.wait_for_idle()
+
+            expected = str(Path(selected).resolve())
+            assert opened == [expected]
+            assert copied == [expected]
 
     asyncio.run(_run())
 

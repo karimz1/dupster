@@ -100,6 +100,13 @@ Your selected theme is saved in `~/.config/dupster/config.json`.
 
 ------
 
+### Recommended Terminal
+
+> [!TIP]
+> Dupster works in any modern terminal, but the TUI feels best in a GPU-accelerated terminal emulator. I personally use and recommend [Ghostty](https://ghostty.org/) for a fast, crisp, and modern terminal experience.
+
+------
+
 ### Performance Since 0.0.8
 
 Version `0.0.8` made Dupster much faster by avoiding full reads for files that cannot be duplicates. The staged scanner checks size, inode, partial hashes, and only then full SHA-256. Benchmarks verify that the new scanner returns the same duplicate groups as the old full-read approach.
@@ -140,7 +147,7 @@ SSD and NVMe drives get concurrent reads. Spinning disks get a single ordered re
 - Symlinks are skipped by default. Use `--follow-symlinks` if you need them.
 - Hardlinked files can appear as duplicate groups, but deleting them does not free extra disk space.
 - Hashes are cached for the current session only.
-- Dupster cannot force GPU acceleration from Python. For the smoothest feel, use a GPU-accelerated terminal emulator. Dupster keeps the UI responsive by avoiding unnecessary redraws.
+- Terminal rendering depends on the emulator. Dupster keeps the UI responsive by avoiding unnecessary redraws.
 - For huge non-interactive batch jobs, also compare tools like [fclones](https://github.com/pkolaczk/fclones), [fdupes](https://github.com/adrianlopezroche/fdupes), and [rdfind](https://github.com/pauldreik/rdfind).
 
 ------
@@ -148,8 +155,9 @@ SSD and NVMe drives get concurrent reads. Spinning disks get a single ordered re
 ### Development
 
 ```bash
-pytest -v
-python tools/benchmark.py ~/Downloads
+uv sync --extra dev
+uv run pytest -v
+uv run tools/benchmark.py ~/Downloads
 uv run tools/benchmark.py --generate temp/bench --files 8000
 ```
 

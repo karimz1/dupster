@@ -1,4 +1,5 @@
 import os
+import shutil
 import subprocess
 import sys
 from collections.abc import Iterator
@@ -74,13 +75,33 @@ def get_mtime_str(path: str) -> str:
         return "—"
 
 
-def open_file(path: str) -> None:
+def _launch_detached(command: list[str]) -> bool:
     try:
-        if sys.platform.startswith("darwin"):
-            subprocess.call(["open", path])
-        elif os.name == "nt":
-            os.startfile(path)  # type: ignore[attr-defined]
-        elif os.name == "posix":
-            subprocess.call(["xdg-open", path])
+        kwargs = {
+            "stdin": subprocess.DEVNULL,
+            "stdout": subprocess.DEVNULL,
+            "stderr": subprocess.DEVNULL,
+        }
+        if os.name == "posix":
+            kwargs["start_new_session"] = True
+        subprocess.Popen(command, **kwargs)
+        return True
     except Exception:
-        pass
+        return False
+
+
+def open_file(path: str) -> bool:
+    if sys.platform.startswith("darwin"):
+        return _launch_detached(["open", path])
+    if os.name == "nt":
+        try:
+            os.startfile(path)  # type: ignore[attr-defined]
+            return True
+        except Exception:
+            return False
+    if os.name == "posix":
+        opener = shutil.which("xdg-open")
+        if not opener:
+            return False
+        return _launch_detached([opener, path])
+    return False

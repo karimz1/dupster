@@ -1591,8 +1591,31 @@ class DupsterApp(App):
 
     def action_open_selected(self) -> None:
         path = self._selected_file()
-        if path:
-            open_file(path)
+        if not path:
+            self.notify("Select a file to open.", severity="warning")
+            return
+
+        full_path = str(Path(path).expanduser().resolve())
+        try:
+            opened = open_file(full_path)
+        except Exception:
+            opened = False
+        if opened:
+            self.notify(f"Opening: {self._display_path(full_path, 72)}")
+            return
+
+        self.copy_to_clipboard(full_path)
+        copied_to_system = self.is_headless or _copy_to_system_clipboard(full_path)
+        if copied_to_system:
+            self.notify(
+                "Could not open file. Full path copied to clipboard.",
+                severity="warning",
+            )
+        else:
+            self.notify(
+                "Could not open file. Full path copied inside Dupster only.",
+                severity="warning",
+            )
 
     def action_copy_selected_path(self) -> None:
         path = self._selected_file()
