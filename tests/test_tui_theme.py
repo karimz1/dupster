@@ -535,5 +535,3 @@ def test_toggle_maximize_pane_expands_vertically_and_restores(tmp_path):
             assert app._pane_maximized is None
 
     asyncio.run(drive())
-
-
