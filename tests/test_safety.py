@@ -8,7 +8,6 @@ that no future refactor can accidentally re-introduce the risk.
 
 import asyncio
 import os
-import sys
 from unittest.mock import patch
 
 import pytest
@@ -20,7 +19,6 @@ from dupster.infrastructure.safety import (
     _is_windows_protected,
     is_os_protected,
 )
-
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -270,7 +268,7 @@ def test_scanner_os_protected_stat_is_separate_from_size_skip(tmp_path, monkeypa
     # A small file that will be skipped by min_size.
     write(tmp_path / "real" / "tiny.bin", b"x")
     # A file that will be skipped by the OS guard.
-    sys_file = write(tmp_path / "sys" / "c.bin", data)
+    write(tmp_path / "sys" / "c.bin", data)
 
     prefix = str(tmp_path / "sys") + os.sep
     orig = __import__("dupster.infrastructure.safety", fromlist=["is_os_protected"]).is_os_protected
