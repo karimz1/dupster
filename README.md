@@ -30,7 +30,7 @@ Use it to scan folders, review duplicate files, copy full file paths, open files
 
 Dupster got Featured on 
 [LinuxLinks](https://www.linuxlinks.com/dupster-duplicate-file-finder/).
-[![PitchHut Project](https://shields.io)](https://www.pitchhut.com/project/dupster-duplicate-file-finder)
+[![Listed on PitchHut](https://shields.io)](https://pitchhut.com)
 
 [![Dupster | AlternativeTo](https://alternativeto.net/static/badges/badge-compact-dark.svg)](https://alternativeto.net/software/dupster/about/?utm_source=badge&utm_medium=referral)
 
