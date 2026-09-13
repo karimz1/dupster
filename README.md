@@ -19,23 +19,20 @@ Use it to scan folders, review duplicate files, copy full file paths, open files
 [![Python](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![Release](https://img.shields.io/github/v/release/karimz1/dupster)](https://github.com/karimz1/dupster/releases)
 [![Homebrew](https://img.shields.io/badge/Homebrew-official%20tap-orange.svg)](https://github.com/karimz1/homebrew-dupster)
-[![Featured on LinuxLinks](https://img.shields.io/badge/Featured%20on-LinuxLinks-2EA44F.svg)](https://www.linuxlinks.com/dupster-duplicate-file-finder/)
 [![Sponsor](https://img.shields.io/badge/Sponsor-GitHub-pink.svg)](https://github.com/sponsors/karimz1)
 
 <p>
   <a href="https://buymeacoffee.com/karimz1">
-    <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" height="41" />
+    <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" height="56" />
   </a>
 </p>
 
-Dupster got Featured on 
-[LinuxLinks](https://www.linuxlinks.com/dupster-duplicate-file-finder/).
-[![Listed on PitchHut](https://shields.io)](https://pitchhut.com)
+<p>Dupster got Listed / Featured on</p>
+
+[![Featured on LinuxLinks](https://img.shields.io/badge/Featured%20on-LinuxLinks-2EA44F.svg?style=for-the-badge)](https://www.linuxlinks.com/dupster-duplicate-file-finder/)
+[![Featured on PitchHut](https://img.shields.io/badge/Featured%20on-PitchHut-2EA44F.svg?style=for-the-badge)](https://www.pitchhut.com/project/dupster-duplicate-file-finder)
 
 [![Dupster | AlternativeTo](https://alternativeto.net/static/badges/badge-compact-dark.svg)](https://alternativeto.net/software/dupster/about/?utm_source=badge&utm_medium=referral)
-
-
-
 
 </div>
 
