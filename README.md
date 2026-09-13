@@ -8,7 +8,7 @@
 
 Use it to scan folders, review duplicate files, copy full file paths, open files, and safely preview cleanup from the command line. Made from a lazy terminal guy, that got sick of remembering all commands.
 
-[![asciicast](https://asciinema.org/a/1265279.svg)](https://asciinema.org/a/1265279)
+[![dupster demo](./images/demo.gif)](./images/demo.gif)
 
 [![CI](https://github.com/karimz1/dupster/actions/workflows/ci.yml/badge.svg)](https://github.com/karimz1/dupster/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
