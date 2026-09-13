@@ -26,6 +26,9 @@ Use it to scan folders, review duplicate files, copy full file paths, open files
 
 Dupster got Featured on [LinuxLinks](https://www.linuxlinks.com/dupster-duplicate-file-finder/).
 
+[![Dupster | AlternativeTo](https://alternativeto.net/static/badges/badge-compact-dark.svg)](https://alternativeto.net/software/dupster/about/?utm_source=badge&utm_medium=referral)
+
+
 
 
 </div>
