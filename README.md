@@ -29,7 +29,8 @@ Use it to scan folders, review duplicate files, copy full file paths, open files
 
 <p>Dupster got Listed / Featured on</p>
 
-[![AwesomeTUI.com](https://img.shields.io/badge/AwesomeTUI.com-Listed-8A2BE2?style=flat-square)](https://awesometui.com/dupster)
+[![AwesomeTUI.com](https://img.shields.io/badge/AwesomeTUI.com-Listed-8A2BE2.svg?style=for-the-badge)](https://awesometui.com/dupster)
+[![awesome-tuis](https://img.shields.io/badge/awesomeTUIs-Github-8A2BE2.svg?style=for-the-badge)](https://github.com/rothgar/awesome-tuis)
 [![Featured on LinuxLinks](https://img.shields.io/badge/Featured%20on-LinuxLinks-2EA44F.svg?style=for-the-badge)](https://www.linuxlinks.com/dupster-duplicate-file-finder/)
 [![Featured on PitchHut](https://img.shields.io/badge/Featured%20on-PitchHut-2EA44F.svg?style=for-the-badge)](https://www.pitchhut.com/project/dupster-duplicate-file-finder)
 
